@@ -22,6 +22,7 @@ const showSettings = ref(false)
 const showAbout = ref(false)
 const themeMenuOpen = ref(false)
 const themeLabels: Record<Theme, string> = { system: 'Use system theme', light: 'Light', dark: 'Dark' }
+const greeting = computed(() => { const hour = new Date().getHours(); return hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening' })
 const importInput = ref<HTMLInputElement | null>(null)
 const importMessage = ref('')
 watch([theme, animationsEnabled], ([themeValue, animationsValue]) => {
@@ -186,7 +187,7 @@ window.addEventListener('android-back', handleAndroidBack)
     </section>
     <template v-else>
     <section id="overview" class="hero">
-      <div class="hero-top"><h1>One place for<br/><em>every dashboard.</em></h1><button class="settings-button" aria-label="Settings" title="Settings" @click="showSettings = true">⚙</button></div>
+      <div class="hero-top"><h1>Good<br/><em>{{ greeting }}.</em></h1><button class="settings-button" aria-label="Settings" title="Settings" @click="showSettings = true">⚙</button></div>
     </section>
     <section id="connections" class="connection card">
       <div class="section-heading"><div><span class="eyebrow">CONTROLLERS</span><h2>Your connections</h2></div><span class="pill">{{ profiles.length }} saved</span></div>
