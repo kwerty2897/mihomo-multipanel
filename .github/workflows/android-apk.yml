@@ -7,6 +7,7 @@ on:
     paths:
       - 'src/**'
       - 'src-tauri/**'
+      - 'index.html'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/android-apk.yml'
