@@ -1,17 +1,30 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
-const panels = [
-  { name: 'Zashboard', detail: 'Modern Mihomo dashboard', mark: 'Z' },
-  { name: 'YACD', detail: 'Yet Another Clash Dashboard', mark: 'Y' },
-  { name: 'MetaCubeXD', detail: 'MetaCube dashboard', mark: 'M' }
-]
-const endpoint = ref('')
-const active = ref('Zashboard')
-const saved = ref(false)
-function addController() {
-  if (!endpoint.value.trim()) return
-  saved.value = true
+type Profile = { id: number; name: string; controller: string; panelUrl: string }
+const profiles = ref<Profile[]>([])
+const activeId = ref<number | null>(null)
+const showAdd = ref(false)
+const name = ref('')
+const controller = ref('')
+const panelUrl = ref('')
+const current = computed(() => profiles.value.find(p => p.id === activeId.value) ?? null)
+function normalizeUrl(value: string) {
+  const v = value.trim()
+  if (!v) return ''
+  try { const u = new URL(v.includes('://') ? v : 'http://' + v); if (!['http:', 'https:'].includes(u.protocol)) return ''; return u.toString().replace(/\/$/, '') } catch { return '' }
+}
+function addProfile() {
+  const c = normalizeUrl(controller.value)
+  const p = normalizeUrl(panelUrl.value)
+  if (!c || !p) return
+  const item: Profile = { id: Date.now(), name: name.value.trim() || c, controller: c, panelUrl: p }
+  profiles.value.push(item); activeId.value = item.id
+  name.value = ''; controller.value = ''; panelUrl.value = ''; showAdd.value = false
+}
+function removeProfile(id: number) {
+  profiles.value = profiles.value.filter(p => p.id !== id)
+  if (activeId.value === id) activeId.value = profiles.value[0]?.id ?? null
 }
 </script>
 
@@ -19,29 +32,37 @@ function addController() {
   <main class="shell">
     <header class="topbar">
       <div class="brand"><div class="logo">M</div><div><strong>Mihomo</strong><span>MultiPanel</span></div></div>
-      <div class="status"><i></i> LOCAL UI</div>
+      <div class="status"><i></i> CONTROLLERS</div>
     </header>
     <section class="hero">
       <div class="eyebrow">YOUR CONNECTION HUB</div>
       <h1>One place for<br/><em>every dashboard.</em></h1>
-      <p>Connect to your Mihomo instance and choose the interface that works for you.</p>
+      <p>Save controller addresses and use your preferred dashboard URL.</p>
     </section>
     <section class="connection card">
-      <div class="section-heading"><div><span class="eyebrow">CONTROLLER</span><h2>Connect Mihomo</h2></div><span class="pill">Not connected</span></div>
-      <label for="endpoint">Controller address</label>
-      <div class="input-row"><input id="endpoint" v-model="endpoint" placeholder="http://192.168.1.1:9090" /><button @click="addController">Add</button></div>
-      <p class="hint">Prototype only — connection and authentication are not yet implemented.</p>
-      <p v-if="saved" class="hint">Address entered. Saving controllers will be implemented next.</p>
-    </section>
-    <section class="panels">
-      <div class="section-heading"><div><span class="eyebrow">INTERFACES</span><h2>Choose a panel</h2></div></div>
-      <div class="panel-list">
-        <button v-for="panel in panels" :key="panel.name" class="panel-card" :class="{selected: active === panel.name}" @click="active = panel.name">
-          <div class="panel-mark">{{ panel.mark }}</div><div class="panel-copy"><strong>{{ panel.name }}</strong><span>{{ panel.detail }}</span></div><div class="arrow">↗</div>
+      <div class="section-heading"><div><span class="eyebrow">CONTROLLERS</span><h2>Your connections</h2></div><span class="pill">{{ profiles.length }} saved</span></div>
+      <div v-if="profiles.length" class="panel-list">
+        <button v-for="profile in profiles" :key="profile.id" class="panel-card" :class="{selected: activeId === profile.id}" @click="activeId = profile.id">
+          <div class="panel-mark">M</div><div class="panel-copy"><strong>{{ profile.name }}</strong><span>{{ profile.controller }}</span><span class="hint">{{ profile.panelUrl }}</span></div><div class="arrow">↗</div>
         </button>
       </div>
-      <div class="preview card"><div class="preview-head"><span class="eyebrow">SELECTED</span><span class="pill">{{ active }}</span></div><h3>{{ active }}</h3><p>Panel integration will be added in the next stage.</p></div>
+      <div v-else class="empty">No saved connections yet. Add your Mihomo controller and dashboard URL.</div>
+      <button class="add-button" @click="showAdd = true"><span class="plus">＋</span> Add connection</button>
+    </section>
+    <section v-if="current" class="panels">
+      <div class="section-heading"><div><span class="eyebrow">DASHBOARD</span><h2>{{ current.name }}</h2></div></div>
+      <div class="preview card"><div class="preview-head"><span class="eyebrow">PANEL URL</span><span class="pill">Custom</span></div><h3>MetaCubeXD</h3><p>{{ current.panelUrl }}</p><p class="hint">Panel loading and API integration are not implemented yet.</p></div>
     </section>
     <footer>MIHOMO MULTIPANEL <span>•</span> EARLY PROTOTYPE</footer>
+    <div v-if="showAdd" class="modal-backdrop" @click.self="showAdd = false">
+      <section class="modal card">
+        <div class="section-heading"><div><span class="eyebrow">NEW CONNECTION</span><h2>Add controller</h2></div><button class="close" @click="showAdd = false">×</button></div>
+        <label for="profile-name">Name (optional)</label><input id="profile-name" v-model="name" placeholder="Home, VPS, Router…"/>
+        <label for="controller-url">Mihomo controller address</label><input id="controller-url" v-model="controller" placeholder="http://192.168.1.1:9090"/>
+        <label for="panel-url">Dashboard URL</label><input id="panel-url" v-model="panelUrl" placeholder="http://192.168.1.1:9090/ui/metacubexd"/>
+        <p class="hint">Enter the controller's external address and the URL of the panel configured on it. URLs must start with http:// or https:// (or will be treated as http://).</p>
+        <div class="modal-actions"><button class="secondary" @click="showAdd = false">Cancel</button><button @click="addProfile" :disabled="!normalizeUrl(controller) || !normalizeUrl(panelUrl)">Save</button></div>
+      </section>
+    </div>
   </main>
 </template>
