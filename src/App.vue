@@ -294,7 +294,7 @@ window.addEventListener('android-back', handleAndroidBack)
         <label for="profile-name">Name (optional)</label><input id="profile-name" v-model="name" placeholder="Home, VPS, Router…"/>
         <label for="connection-url">Dashboard / controller URL</label><input id="connection-url" :value="connectionUrl" @input="connectionUrl = ($event.target as HTMLInputElement).value.toLowerCase()" placeholder="http://192.168.1.1:9090/ui/metacubexd" autocapitalize="none" spellcheck="false"/>
         <label for="add-mihomo-url">Mihomo URL (optional)</label><input id="add-mihomo-url" v-model="mihomoUrl" placeholder="http://192.168.1.1:9090" autocapitalize="none" spellcheck="false"/><p class="hint">Optional direct Mihomo API address, used for connection status checks when the dashboard is hosted elsewhere.</p><p class="hint">Enter the dashboard URL. The controller address is detected automatically from its origin.</p>
-        <div class="modal-actions"><button class="secondary" @click="showAdd = false">Cancel</button><button @click="addProfile" :disabled="!controllerFromFields()">Save</button></div>
+        <div class="modal-actions"><button class="secondary" @click="showAdd = false">Cancel</button><button @click="addProfile" :disabled="!deriveController(connectionUrl)">Save</button></div>
       </section>
     </div>
   </main>
