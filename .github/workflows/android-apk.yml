@@ -62,7 +62,9 @@ jobs:
               raise SystemExit(f"Expected one MainActivity.kt, found: {candidates}")
           path = candidates[0]
           source = path.read_text()
-          pattern = r"class MainActivity\s*:\s*TauriActivity\(\)\s*(?:\{\s*\})?"
+          class_start = source.find("class MainActivity")
+          if class_start < 0:
+              raise SystemExit(f"Could not find MainActivity declaration in {path}")
           replacement = """class MainActivity : TauriActivity() {
               private var cacheManager: android.net.ConnectivityManager? = null
               private var cacheCallback: android.net.ConnectivityManager.NetworkCallback? = null
@@ -142,9 +144,7 @@ jobs:
                   window.decorView.systemUiVisibility = flags
               }
           }"""
-          updated, count = re.subn(pattern, replacement, source, count=1)
-          if count != 1:
-              raise SystemExit(f"Could not patch MainActivity declaration in {path}")
+          updated = source[:class_start] + replacement + "\\n"
           path.write_text(updated)
           print(f"Configured navigation bar in {path}")
           PY
