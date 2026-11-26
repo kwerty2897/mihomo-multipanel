@@ -240,8 +240,13 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible),[role="button"]:foc
 :root[data-theme="dark"] .controller-status p{color:#a6a2b1}
 
 /* Compact centered hero, prototype footer */
-.hero{padding-top:12px;text-align:center}.hero-top{justify-content:center;position:relative}.hero-top h1{margin:0;font-size:clamp(34px,7vw,54px)}.hero-top .settings-button{position:absolute;right:0;top:0}.hero p{display:none}footer{text-align:center}
+.hero{padding-top:12px;text-align:left}.hero-top{justify-content:flex-start;position:relative;text-align:left}.hero-top h1{margin:0;font-size:clamp(34px,7vw,54px);text-align:left}.hero-top .settings-button{position:absolute;right:0;top:0}.hero p{display:none}footer{text-align:center}
 
 :root[data-monet="on"] .panel-card.selected,:root[data-monet="on"] .add-button,:root[data-monet="on"] .open-panel-button,:root[data-monet="on"] .modal-actions button:not(.secondary),:root[data-monet="on"] .backup-button:not(.secondary-backup){background:var(--monet-primary);color:var(--monet-on-primary)}
 :root[data-monet="on"] .hero h1 em,:root[data-monet="on"] .eyebrow,:root[data-monet="on"] .about-link,:root[data-monet="on"] .import-message{color:var(--monet-primary)}
 :root[data-theme="light"][data-monet="on"] .hero h1 em,:root[data-theme="light"][data-monet="on"] .eyebrow,:root[data-theme="light"][data-monet="on"] .about-link{color:var(--monet-light-primary)}
+
+/* Unified theme palette: shared tokens keep controls and surfaces consistent. */
+:root{--app-surface:#1a1921;--app-card:#1a1921;--app-border:#33313c;--app-muted:#a6a2b1;--app-input:#111117;--app-accent:var(--monet-primary);--app-accent-container:var(--monet-container);--app-on-accent:var(--monet-on-primary)}
+:root[data-theme="light"]{--app-surface:#fff;--app-card:#fff;--app-border:#e2deea;--app-muted:#686373;--app-input:#f8f7fa;--app-accent:var(--monet-light-primary);--app-accent-container:var(--monet-light-container);--app-on-accent:#fff}
+:root[data-theme="dark"]{--app-surface:#1a1921;--app-card:#1a1921;--app-border:#33313c;--app-muted:#a6a2b1;--app-input:#111117;--app-accent:var(--monet-primary);--app-accent-container:var(--monet-container);--app-on-accent:var(--monet-on-primary)}
