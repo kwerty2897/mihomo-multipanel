@@ -73,3 +73,7 @@
 :root[data-theme="light"] .settings-select,:root[data-theme="light"] .modal input{border-color:#d9d4e1;background:#f8f7fa;color:#282432}
 :root[data-theme="light"] .settings-divider{background:#e5e0eb}
 :root[data-theme="light"] .about-link{border-color:#ddd7e7;color:#7056a5}
+
+/* Prevent accidental text selection in the app UI; keep form controls editable. */
+html,body,.shell,.shell *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea,select,[contenteditable="true"]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
