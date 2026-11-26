@@ -212,12 +212,6 @@ window.addEventListener('android-back', handleAndroidBack)
     </section>
     <section v-if="current" id="dashboard" class="panels">
       <div class="section-heading"><div><span class="eyebrow">DASHBOARD</span><h2>{{ current.name }}</h2></div></div>
-      <div class="controller-status card" :class="'state-' + controllerStatus">
-        <div class="status-row"><span class="status-indicator" :class="controllerStatus"></span><strong>{{ controllerStatus === 'checking' ? 'Checking controller…' : controllerStatus === 'online' ? 'Controller reachable' : controllerStatus === 'offline' ? 'Controller unavailable' : 'Controller status' }}</strong><button class="status-refresh" type="button" :disabled="controllerStatus === 'checking'" aria-label="Check controller again" @click="checkController">↻</button></div>
-        <p>{{ controllerStatusMessage || (controllerStatus === 'idle' ? 'Check the connection to Mihomo.' : controllerStatus === 'checking' ? 'Requesting /version…' : '') }}</p>
-        <span v-if="controllerCheckedAt" class="status-time">Last check: {{ controllerCheckedAt }}</span>
-        <p class="status-disclaimer">A failed check may also be caused by browser network restrictions (CORS).</p>
-      </div>
       <div class="preview card"><div class="preview-head"><span class="eyebrow">PANEL URL</span><span class="pill">Ready</span></div><h3>Dashboard</h3><p>{{ current.panelUrl }}</p><button class="open-panel-button" @click="openPanel">Open dashboard <span>↗</span></button><p class="hint">The dashboard opens inside the app. Its own update mechanism remains unchanged.</p></div>
     </section>
     <footer>EARLY PROTOTYPE</footer>
