@@ -96,6 +96,11 @@ function renderTemplate(template: string) { return template.replace(/%host/g, en
 function controllerFromFields() { const h = host.value.trim().replace(/^https?:\/\//, '').replace(/\/$/, ''); const pt = port.value.trim(); if (!h || !/^\d{1,5}$/.test(pt) || Number(pt) < 1 || Number(pt) > 65535) return ''; return normalizeUrl('http://' + h + ':' + pt) }
 function deriveController(value: string) { const normalized = normalizeUrl(value); if (!normalized) return ''; try { return new URL(normalized).origin } catch { return '' } }
 const current = computed(() => profiles.value.find(p => p.id === activeId.value) ?? null)
+const devices = computed(() => { const groups = new Map<string, Profile[]>(); for (const p of profiles.value) { const key = p.controller; if (!groups.has(key)) groups.set(key, []); groups.get(key)!.push(p) } return Array.from(groups.entries()).map(([controller, dashboards]) => ({ controller, name: dashboards[0]?.name || controller, dashboards })) })
+const expandedDevices = ref<string[]>(devices.value.map(d => d.controller))
+function toggleDevice(controller: string) { expandedDevices.value = expandedDevices.value.includes(controller) ? expandedDevices.value.filter(x => x !== controller) : [...expandedDevices.value, controller] }
+function openDashboard(profile: Profile) { activeId.value = profile.id; panelLoading.value = true; panelOpen.value = true }
+
 function normalizeUrl(value: string) {
   const v = value.trim()
   if (!v) return ''
@@ -208,21 +213,20 @@ window.addEventListener('android-back', handleAndroidBack)
     <section id="overview" class="hero">
       <div class="hero-top"><h1><em>{{ greeting }}</em></h1><button class="settings-button" aria-label="Settings" title="Settings" @click="showSettings = true">⚙</button></div>
     </section>
-    <section id="connections" class="connection card">
-      <div class="section-heading"><div><span class="eyebrow">CONTROLLERS</span><h2>Your connections</h2></div><span class="pill">{{ profiles.length }} saved</span></div>
-      <div v-if="profiles.length" class="panel-list">
-        <div v-for="profile in profiles" :key="profile.id" class="panel-card" :class="{selected: activeId === profile.id}" role="button" tabindex="0" @click="activeId = profile.id" @keydown.enter="activeId = profile.id" @pointerdown="startLongPress(profile)" @pointerup="cancelLongPress" @pointerleave="cancelLongPress" @pointercancel="cancelLongPress" @contextmenu.prevent="startLongPress(profile)">
-          <div class="panel-copy"><strong>{{ profile.name }}</strong><span>{{ profile.controller }}</span></div><div class="arrow">›</div>
-        </div>
+    <section id="connections" class="connection card device-hub">
+      <div class="section-heading"><div><span class="eyebrow">DEVICES</span><h2>Your devices</h2></div><span class="pill">{{ devices.length }} saved</span></div>
+      <div v-if="devices.length" class="device-list">
+        <article v-for="device in devices" :key="device.controller" class="device-card">
+          <button class="device-heading" type="button" @click="toggleDevice(device.controller)"><div class="device-copy"><strong>{{ device.name }}</strong><span>{{ device.controller }}</span><small>{{ device.dashboards.length }} dashboard{{ device.dashboards.length === 1 ? "" : "s" }}</small></div><span class="device-chevron">{{ expandedDevices.includes(device.controller) ? "⌄" : "›" }}</span></button>
+          <div v-if="expandedDevices.includes(device.controller)" class="dashboard-grid">
+            <button v-for="dashboard in device.dashboards" :key="dashboard.id" class="dashboard-tile" type="button" @click="openDashboard(dashboard)"><span class="tile-icon">▦</span><strong>{{ dashboard.name }}</strong><span class="tile-url">{{ dashboard.panelUrl }}</span></button>
+            <button class="dashboard-tile add-dashboard-tile" type="button" @click="name=device.name;host=device.dashboards[0]?.host || "";port=device.dashboards[0]?.port || "9090";secret=device.dashboards[0]?.secret || "";mihomoUrl=device.dashboards[0]?.mihomoUrl || "";selectedTemplateId=panelTemplates[0]?.id || "";manualPanelUrl="";showAdd=true"><span class="tile-icon">＋</span><strong>Add dashboard</strong><span class="tile-url">Add another panel to this device</span></button>
+          </div>
+        </article>
       </div>
-      <div v-else class="empty">No saved connections yet. Add your Mihomo controller and dashboard URL.</div>
-      <button class="add-button" @click="host = '127.0.0.1'; port = '9090'; selectedTemplateId = ''; secret = ''; mihomoUrl = ''; manualPanelUrl = ''; showAdd = true"><span class="plus">＋</span> Add connection</button>
-    </section>
-    <section v-if="current" id="dashboard" class="panels">
-      <div class="section-heading"><div><span class="eyebrow">DASHBOARD</span><h2>{{ current.name }}</h2></div></div>
-      <div class="preview card"><div class="preview-head"><span class="eyebrow">PANEL URL</span><span class="pill">Ready</span></div><h3>Dashboard</h3><p>{{ current.panelUrl }}</p><button class="open-panel-button" @click="openPanel">Open dashboard <span>↗</span></button><p class="hint">The dashboard opens inside the app. Its own update mechanism remains unchanged.</p></div>
-    </section>
-    <footer>EARLY PROTOTYPE</footer>
+      <div v-else class="empty">No devices yet. Add a controller and its first dashboard.</div>
+      <button class="add-button" @click="name="";host="127.0.0.1";port="9090";selectedTemplateId=panelTemplates[0]?.id || "";secret="";mihomoUrl="";manualPanelUrl="";showAdd=true"><span class="plus">＋</span> Add device</button>
+    </section>    <footer>EARLY PROTOTYPE</footer>
     </template>
 
     <Transition name="settings-exit">
