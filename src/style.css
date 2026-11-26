@@ -310,3 +310,6 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible),[role="button"]:foc
 :root .about-logo{background:var(--mp-accent-container);border-color:var(--mp-outline);color:var(--mp-accent)}:root .about-link{border-color:var(--mp-outline);color:var(--mp-accent)}
 :root .modal-backdrop{background:color-mix(in srgb,var(--mp-bg) 60%,transparent)}:root .modal{box-shadow:var(--mp-shadow)}
 :root .panel-viewer{background:var(--mp-bg);color:var(--mp-text)}:root .panel-toolbar{background:var(--mp-surface);border-color:var(--mp-outline)}:root .panel-loading{background:var(--mp-surface2);color:var(--mp-text)}
+
+/* Ensure Export settings button label stays white in dark mode. */
+:root[data-theme="dark"] .backup-button:not(.secondary-backup){color:#fff!important}
