@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 
-type Profile = { id: number; name: string; controller: string; panelUrl: string; host?: string; port?: string; secret?: string; mihomoUrl?: string }
+type Profile = { id: number; name: string; controller: string; panelUrl: string; panelTemplateId?: string; host?: string; port?: string; secret?: string; mihomoUrl?: string }\ntype PanelTemplate = { id: string; name: string; url: string }\nconst DEFAULT_TEMPLATES: PanelTemplate[] = [{ id: 'yacd', name: 'YACD', url: 'https://yacd.metacubex.one/?hostname=%host&port=%port&secret=%secret' }, { id: 'zash', name: 'Zash', url: 'https://board.zash.run.place/#/setup?http=true&hostname=%host&port=%port&secret=%secret' }, { id: 'metacubexd', name: 'MetaCubeXD', url: 'https://metacubex.github.io/metacubexd/#/setup?http=true&hostname=%host&port=%port&secret=%secret' }]
 const STORAGE_KEY = 'mihomo-multipanel-profiles-v1'
 const SETTINGS_KEY = 'mihomo-multipanel-settings-v1'
 type Theme = 'system' | 'light' | 'dark'
@@ -10,8 +10,8 @@ const savedSettings = (() => {
 })()
 const theme = ref<Theme>(['system', 'light', 'dark'].includes(savedSettings.theme) ? savedSettings.theme : 'system')
 const animationsEnabled = ref(savedSettings.animations !== false)
-const hidePanelToolbar = ref(savedSettings.hidePanelToolbar === true)
-watch(hidePanelToolbar, value => { try { const current = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...current, hidePanelToolbar: value })) } catch { /* storage may be unavailable */ } })
+const hidePanelToolbar = ref(savedSettings.hidePanelToolbar === true)\nconst panelTemplates = ref<PanelTemplate[]>(Array.isArray(savedSettings.panelTemplates) && savedSettings.panelTemplates.length ? savedSettings.panelTemplates : DEFAULT_TEMPLATES)\nconst selectedTemplateId = ref('yacd')\nconst templateName = ref('')\nconst templateUrl = ref('')\nconst editingTemplateId = ref('')
+watch(hidePanelToolbar, value => { try { const current = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...current, hidePanelToolbar: value, panelTemplates: panelTemplates.value })) } catch { /* storage may be unavailable */ } })
 const panelOpen = ref(false)
 const panelLoading = ref(false)
 const controllerStatus = ref<'idle' | 'checking' | 'online' | 'offline'>('idle')
@@ -31,7 +31,7 @@ const greeting = computed(() => { const hour = new Date().getHours(); return hou
 const importInput = ref<HTMLInputElement | null>(null)
 const importMessage = ref('')
 watch([theme, animationsEnabled], ([themeValue, animationsValue]) => {
-  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ theme: themeValue, animations: animationsValue, hidePanelToolbar: hidePanelToolbar.value })) } catch { /* storage may be unavailable */ }
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ theme: themeValue, animations: animationsValue, hidePanelToolbar: hidePanelToolbar.value, panelTemplates: panelTemplates.value })) } catch { /* storage may be unavailable */ }
   const root = document.documentElement
   root.setAttribute('data-theme', themeValue === 'system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : themeValue)
   root.setAttribute('data-animations', animationsValue ? 'on' : 'off')
@@ -94,10 +94,10 @@ function normalizeUrl(value: string) {
 function saveEdit() {
   const controller = controllerFromFields()
   if (!controller || editingId.value === null) return
-  const panel = 'https://metacubex.github.io/metacubexd/#/setup?http=true&hostname=' + encodeURIComponent(host.value.trim()) + '&port=' + encodeURIComponent(port.value.trim()) + '&secret=' + encodeURIComponent(secret.value)
+  
   const index = profiles.value.findIndex(p => p.id === editingId.value)
   if (index < 0) return
-  profiles.value[index] = { ...profiles.value[index], name: name.value.trim() || controller, controller: normalizeUrl(mihomoUrl.value) || controller, panelUrl: profiles.value[index].panelUrl, host: host.value.trim(), port: port.value.trim(), secret: secret.value, mihomoUrl: normalizeUrl(mihomoUrl.value) || '' }
+  profiles.value[index] = { ...profiles.value[index], name: name.value.trim() || controller, controller: normalizeUrl(mihomoUrl.value) || controller, host: host.value.trim(), port: port.value.trim(), secret: secret.value, mihomoUrl: normalizeUrl(mihomoUrl.value) || '' }
   showEdit.value = false
   editingId.value = null
 }
@@ -105,12 +105,12 @@ function addProfile() {
   const p = normalizeUrl(connectionUrl.value)
   const c = deriveController(connectionUrl.value)
   if (!c || !p) return
-  const parsed = (() => { try { return new URL(c) } catch { return null } })(); const item: Profile = { id: Date.now(), name: name.value.trim() || c, controller: normalizeUrl(mihomoUrl.value) || c, panelUrl: p, host: parsed?.hostname || host.value.trim(), port: parsed?.port || port.value.trim() || '9090', secret: secret.value, mihomoUrl: normalizeUrl(mihomoUrl.value) || '' }
+  const parsed = (() => { try { return new URL(c) } catch { return null } })(); const item: Profile = { id: Date.now(), name: name.value.trim() || c, controller: normalizeUrl(mihomoUrl.value) || c, panelUrl: p, panelTemplateId: selected?.id, host: host.value.trim() || parsed?.hostname || '', port: port.value.trim() || parsed?.port || '9090', secret: secret.value, mihomoUrl: normalizeUrl(mihomoUrl.value) || '' }
   profiles.value.push(item); activeId.value = item.id
-  name.value = ''; host.value = ''; port.value = '9090'; secret.value = ''; mihomoUrl.value = ''; showAdd.value = false
+  name.value = ''; host.value = ''; port.value = '9090'; secret.value = ''; mihomoUrl.value = ''; connectionUrl.value = ''; showAdd.value = false
 }
 function exportSettings() {
-  const payload = { settings: { theme: theme.value, animations: animationsEnabled.value, hidePanelToolbar: hidePanelToolbar.value }, profiles: profiles.value }
+  const payload = { settings: { theme: theme.value, animations: animationsEnabled.value, hidePanelToolbar: hidePanelToolbar.value, panelTemplates: panelTemplates.value }, profiles: profiles.value }
   const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))))
   const backup = { app: 'mihomo-multipanel', version: 2, exportedAt: new Date().toISOString(), secret: encoded }
   const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' })
@@ -126,9 +126,9 @@ async function importSettings(event: Event) {
   try {
     const data: unknown = JSON.parse(await file.text())
     if (!data || typeof data !== 'object') throw new Error('Invalid backup file.')
-    const outer = data as { app?: unknown; version?: unknown; profiles?: unknown; settings?: { theme?: unknown; animations?: unknown; hidePanelToolbar?: unknown }; secret?: unknown }
+    const outer = data as { app?: unknown; version?: unknown; profiles?: unknown; settings?: { theme?: unknown; animations?: unknown; hidePanelToolbar?: unknown; panelTemplates?: unknown }; secret?: unknown }
     if (outer.app !== 'mihomo-multipanel') throw new Error('Unsupported backup format.')
-    let backup: { profiles?: unknown; settings?: { theme?: unknown; animations?: unknown; hidePanelToolbar?: unknown } }
+    let backup: { profiles?: unknown; settings?: { theme?: unknown; animations?: unknown; hidePanelToolbar?: unknown; panelTemplates?: unknown } }
     if (outer.version === 1) backup = outer
     else if (outer.version === 2 && typeof outer.secret === 'string') {
       backup = JSON.parse(decodeURIComponent(escape(atob(outer.secret))))
@@ -142,7 +142,7 @@ async function importSettings(event: Event) {
     const importedTheme = backup.settings?.theme
     theme.value = ['system', 'light', 'dark'].includes(String(importedTheme)) ? importedTheme as Theme : 'system'
     animationsEnabled.value = backup.settings?.animations !== false
-    hidePanelToolbar.value = backup.settings?.hidePanelToolbar === true
+    hidePanelToolbar.value = backup.settings?.hidePanelToolbar === true\n    panelTemplates.value = Array.isArray(backup.settings?.panelTemplates) && backup.settings!.panelTemplates!.length ? backup.settings!.panelTemplates as PanelTemplate[] : DEFAULT_TEMPLATES
     importMessage.value = 'Backup imported successfully.'
   } catch (error) { importMessage.value = error instanceof Error ? error.message : 'Could not import backup.' }
   finally { input.value = '' }
@@ -185,7 +185,7 @@ function reloadPanel() {
   const frame = document.querySelector<HTMLIFrameElement>('.panel-frame')
   if (frame) frame.src = current.value.panelUrl
 }
-function removeProfile(id: number) {
+function saveTemplate() { const n = templateName.value.trim(); const u = templateUrl.value.trim(); if (!n || !u) return; if (editingTemplateId.value) { const i = panelTemplates.value.findIndex(t => t.id === editingTemplateId.value); if (i >= 0) panelTemplates.value[i] = { id: editingTemplateId.value, name: n, url: u }; } else panelTemplates.value.push({ id: 'custom-' + Date.now(), name: n, url: u }); templateName.value = ''; templateUrl.value = ''; editingTemplateId.value = '' }\nfunction editTemplate(t: PanelTemplate) { editingTemplateId.value = t.id; templateName.value = t.name; templateUrl.value = t.url }\nfunction deleteTemplate(id: string) { if (DEFAULT_TEMPLATES.some(t => t.id === id)) { const def = DEFAULT_TEMPLATES.find(t => t.id === id)!; panelTemplates.value = panelTemplates.value.map(t => t.id === id ? { ...def, url: '' } : t); } else panelTemplates.value = panelTemplates.value.filter(t => t.id !== id); }\nfunction removeProfile(id: number) {
   profiles.value = profiles.value.filter(p => p.id !== id)
   if (activeId.value === id) activeId.value = profiles.value[0]?.id ?? null
 }
