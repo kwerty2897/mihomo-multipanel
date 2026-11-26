@@ -42,7 +42,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
-          cache-all: true
+          cache-all-crates: true
       - name: Install npm dependencies
         run: npm install
       - name: Initialize Android project
@@ -106,13 +106,17 @@ jobs:
 
           # Remove obsolete AGP compatibility switches from the generated project.
           GRADLE_PROPS=src-tauri/gen/android/gradle.properties
-          if [ -f "$GRADLE_PROPS" ]; then
-            sed -i -E '/^(android\.proguard\.failOnMissingFiles|android\.builtInKotlin|android\.newDsl)=/d' "$GRADLE_PROPS"
+          touch "$GRADLE_PROPS"
+          # AGP 9 enables built-in Kotlin by default; Tauri's generated app
+          # still applies org.jetbrains.kotlin.android explicitly. Disable
+          # built-in Kotlin until the Tauri Android template migrates.
+          if grep -q '^android\.builtInKotlin=' "$GRADLE_PROPS"; then
+            sed -i 's/^android\.builtInKotlin=.*/android.builtInKotlin=false/' "$GRADLE_PROPS"
+          else
+            echo 'android.builtInKotlin=false' >> "$GRADLE_PROPS"
           fi
-          if grep -Eq '^(android\.proguard\.failOnMissingFiles|android\.builtInKotlin|android\.newDsl)=' "$GRADLE_PROPS" 2>/dev/null; then
-            echo "::error::Deprecated Android Gradle properties remain"
-            exit 1
-          fi
+          # This obsolete ProGuard compatibility switch is not needed.
+          sed -i '/^android\.proguard\.failOnMissingFiles=/d' "$GRADLE_PROPS"
       - name: Build optimized release APK via Tauri
         run: npx tauri android build --apk --split-per-abi
       - name: Sign APKs (persistent key or temporary fallback)
