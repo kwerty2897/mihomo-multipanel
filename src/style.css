@@ -203,3 +203,13 @@ input,textarea,select,[contenteditable="true"]{-webkit-user-select:text;user-sel
 :root[data-theme="dark"] .theme-picker-option:active,:root[data-theme="dark"] .theme-picker-option[aria-selected="true"]{background:#383143}
 :root[data-theme="dark"] .theme-picker-check{color:#c4b3ff}
 :root[data-animations="on"] .theme-picker-menu{animation:mp-modal-in .16s ease both}
+
+
+/* Remove Android/WebView blue tap highlight and native focus flashes */
+html,body,button,a,[role="button"],input,select,textarea,.panel-card,.add-button,.theme-picker-option{
+  -webkit-tap-highlight-color: transparent;
+}
+button,a,[role="button"],.panel-card,.add-button,.theme-picker-option{
+  outline:none;
+}
+button:focus:not(:focus-visible),a:focus:not(:focus-visible),[role="button"]:focus:not(:focus-visible){outline:none;}
