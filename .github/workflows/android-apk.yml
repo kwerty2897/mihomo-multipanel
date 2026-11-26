@@ -51,7 +51,11 @@ jobs:
           cairosvg.svg2png(url='src-tauri/icons/icon.svg',write_to='src-tauri/icons/icon.png',output_width=512,output_height=512)
           PY
       - name: Initialize Android project
-        run: npx tauri android init
+        run: |
+          rm -rf src-tauri/gen/android
+          npx tauri android init
+          test -f src-tauri/gen/android/tauri.settings.gradle
+          test -f src-tauri/gen/android/settings.gradle
       - name: Configure Android adaptive and themed icons
         run: |
           RES=src-tauri/gen/android/app/src/main/res
