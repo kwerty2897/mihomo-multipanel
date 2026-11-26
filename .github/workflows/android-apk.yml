@@ -89,6 +89,17 @@ jobs:
           XML
       - name: Build optimized release APK via Tauri
         run: npx tauri android build --apk --split-per-abi
+      - name: Sign APKs
+        run: |
+          set -e
+          KEYSTORE="$RUNNER_TEMP/mihomo-multipanel-signing.jks"
+          keytool -genkeypair -noprompt -v -keystore "$KEYSTORE" -storepass android -keypass android -alias multipanel -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Mihomo MultiPanel, OU=Android, O=Open Source, L=NA, ST=NA, C=US"
+          for apk in src-tauri/gen/android/app/build/outputs/apk/**/*.apk; do
+            [ -f "$apk" ] || continue
+            apksigner sign --ks "$KEYSTORE" --ks-pass pass:android --key-pass pass:android "$apk"
+            apksigner verify "$apk"
+            mv "$apk" "${apk%-unsigned.apk}.apk"
+          done
       - uses: actions/upload-artifact@v4
         with:
           name: mihomo-multipanel-apk
