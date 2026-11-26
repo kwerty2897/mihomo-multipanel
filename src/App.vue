@@ -166,7 +166,8 @@ async function checkController() {
   controllerStatusMessage.value = ''
   try {
     const endpoint = current.value.controller.replace(/\/$/, '') + '/version'
-    const headers: Record<string, string> = {}; if (current.value.secret) headers.Authorization = 'Bearer ' + current.value.secret\n    const response = await fetch(endpoint, { signal: request.signal, cache: 'no-store', headers })
+    const headers: Record<string, string> = {}; if (current.value.secret) headers.Authorization = 'Bearer ' + current.value.secret
+    const response = await fetch(endpoint, { signal: request.signal, cache: 'no-store', headers })
     if (!response.ok) throw new Error('HTTP ' + response.status)
     const data = await response.json()
     controllerStatus.value = 'online'
