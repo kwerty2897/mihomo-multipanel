@@ -288,6 +288,8 @@ jobs:
           grep -q 'android.permission.ACCESS_NETWORK_STATE' "$MANIFEST"
       - name: Generate app icons from SVG
         run: npx tauri icon src-tauri/icons/icon.svg
+      - name: Install Pillow for transparent launcher PNGs
+        run: python3 -m pip install --user Pillow
       - name: Configure and verify Android launcher icons
         run: |
           set -euo pipefail
