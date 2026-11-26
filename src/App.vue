@@ -212,6 +212,7 @@ window.addEventListener('android-back', handleAndroidBack)
     <footer>EARLY PROTOTYPE</footer>
     </template>
 
+    <Transition name="settings-exit">
     <div v-if="showSettings" class="modal-backdrop" @click.self="showSettings = false">
       <section class="modal card settings-modal">
         <div class="section-heading"><div><span class="eyebrow">PREFERENCES & BACKUP</span><h2>Settings</h2></div><button class="close" aria-label="Close settings" @click="showSettings = false">×</button></div>
@@ -247,6 +248,7 @@ window.addEventListener('android-back', handleAndroidBack)
         <button class="about-button" @click="showAbout = true">About</button>
       </section>
     </div>
+    </Transition>
 
     <div v-if="showAbout" class="modal-backdrop about-backdrop" @click.self="showAbout = false">
       <section class="modal card about-modal">
