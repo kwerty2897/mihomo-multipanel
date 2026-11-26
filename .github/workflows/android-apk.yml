@@ -35,23 +35,20 @@ jobs:
         run: npm install
       - name: Generate app icon
         run: |
-          python -m pip install Pillow
+          python -m pip install Pillow cairosvg
           mkdir -p src-tauri/icons
+          cat > src-tauri/icons/icon.svg <<'SVG'
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <g stroke="#fff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+              <path fill="#000" d="M256 66 421 157 421 354 256 446 91 354 91 157Z"/>
+              <path fill="none" d="M91 157 256 250 421 157 M256 250 256 446"/>
+              <path fill="none" d="M256 94 256 218 M123 336 234 272 M278 272 389 336"/>
+            </g>
+          </svg>
+          SVG
           python - <<'PY'
-          from PIL import Image, ImageDraw
-          S=512
-          im=Image.new('RGBA',(S,S)); p=im.load()
-          for y in range(S):
-            for x in range(S):
-              t=(x+y)/(2*S); p[x,y]=(int(8+24*t),int(12+15*t),int(55+65*t),255)
-          d=ImageDraw.Draw(im)
-          # Minimal Mihomo-inspired mascot mark, without panel/dashboard elements
-          d.polygon([(118,300),(125,160),(185,95),(238,151),(274,151),(330,95),(390,160),(395,300),(365,360),(150,360)],fill=(242,242,255,255))
-          d.ellipse((178,213,211,258),fill=(17,20,62,255))
-          d.ellipse((302,213,335,258),fill=(17,20,62,255))
-          # tail accent
-          d.arc((310,300,440,430),start=210,end=65,fill=(242,242,255,255),width=42)
-          im.save('src-tauri/icons/icon.png')
+          import cairosvg
+          cairosvg.svg2png(url='src-tauri/icons/icon.svg',write_to='src-tauri/icons/icon.png',output_width=512,output_height=512)
           PY
       - name: Initialize Android project
         run: npx tauri android init
