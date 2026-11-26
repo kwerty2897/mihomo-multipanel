@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 
-type Profile = { id: number; name: string; controller: string; panelUrl: string; panelTemplateId?: string; host?: string; port?: string; secret?: string; mihomoUrl?: string }
+type Profile = { id: number; name: string; deviceName?: string; controller: string; panelUrl: string; panelTemplateId?: string; host?: string; port?: string; secret?: string; mihomoUrl?: string }
 type PanelTemplate = { id: string; name: string; url: string }
 const DEFAULT_TEMPLATES: PanelTemplate[] = [{ id: 'yacd', name: 'YACD', url: 'https://yacd.metacubex.one/?hostname=%host&port=%port&secret=%secret' }, { id: 'zash', name: 'Zash', url: 'https://board.zash.run.place/#/setup?http=true&hostname=%host&port=%port&secret=%secret' }, { id: 'metacubexd', name: 'MetaCubeXD', url: 'https://metacubex.github.io/metacubexd/#/setup?http=true&hostname=%host&port=%port&secret=%secret' }]
 const STORAGE_KEY = 'mihomo-multipanel-profiles-v1'
@@ -96,9 +96,15 @@ function renderTemplate(template: string) { return template.replace(/%host/g, en
 function controllerFromFields() { const h = host.value.trim().replace(/^https?:\/\//, '').replace(/\/$/, ''); const pt = port.value.trim(); if (!h || !/^\d{1,5}$/.test(pt) || Number(pt) < 1 || Number(pt) > 65535) return ''; return normalizeUrl('http://' + h + ':' + pt) }
 function deriveController(value: string) { const normalized = normalizeUrl(value); if (!normalized) return ''; try { return new URL(normalized).origin } catch { return '' } }
 const current = computed(() => profiles.value.find(p => p.id === activeId.value) ?? null)
-const devices = computed(() => { const groups = new Map<string, Profile[]>(); for (const p of profiles.value) { const key = p.controller; if (!groups.has(key)) groups.set(key, []); groups.get(key)!.push(p) } return Array.from(groups.entries()).map(([controller, dashboards]) => ({ controller, name: dashboards[0]?.name || controller, dashboards })) })
+const devices = computed(() => { const groups = new Map<string, Profile[]>(); for (const p of profiles.value) { const key = p.controller; if (!groups.has(key)) groups.set(key, []); groups.get(key)!.push(p) } return Array.from(groups.entries()).map(([controller, dashboards]) => ({ controller, name: dashboards[0]?.deviceName || dashboards[0]?.name || controller, dashboards })) })
 const expandedDevices = ref<string[]>(devices.value.map(d => d.controller))
 function toggleDevice(controller: string) { expandedDevices.value = expandedDevices.value.includes(controller) ? expandedDevices.value.filter(x => x !== controller) : [...expandedDevices.value, controller] }
+const showDeviceEdit = ref(false)
+const editingDeviceController = ref('')
+const deviceEditName = ref('')
+function prepareEditDevice(device: {controller:string;name:string}) { editingDeviceController.value=device.controller; deviceEditName.value=device.name; showDeviceEdit.value=true }
+function saveDeviceName() { const n=deviceEditName.value.trim(); if(!n) return; profiles.value=profiles.value.map(p=>p.controller===editingDeviceController.value?{...p,deviceName:n}:p); showDeviceEdit.value=false }
+function deleteDevice(controller:string) { if(!window.confirm('Delete this device and all its dashboards?')) return; const removed=profiles.value.filter(p=>p.controller===controller); profiles.value=profiles.value.filter(p=>p.controller!==controller); if(removed.some(p=>p.id===activeId.value)){closePanel();activeId.value=profiles.value[0]?.id??null} expandedDevices.value=expandedDevices.value.filter(x=>x!==controller) }
 function openDashboard(profile: Profile) { activeId.value = profile.id; panelLoading.value = true; panelOpen.value = true }
 function prepareAddDevice() { name.value = ""; host.value = "127.0.0.1"; port.value = "9090"; selectedTemplateId.value = panelTemplates.value[0]?.id || ""; secret.value = ""; mihomoUrl.value = ""; manualPanelUrl.value = ""; showAdd.value = true }
 function prepareAddDashboard(device: { name: string; dashboards: Profile[] }) { name.value = device.name; host.value = device.dashboards[0]?.host || ""; port.value = device.dashboards[0]?.port || "9090"; secret.value = device.dashboards[0]?.secret || ""; mihomoUrl.value = device.dashboards[0]?.mihomoUrl || ""; selectedTemplateId.value = panelTemplates.value[0]?.id || ""; manualPanelUrl.value = ""; showAdd.value = true }
@@ -219,7 +225,7 @@ window.addEventListener('android-back', handleAndroidBack)
       <div class="section-heading"><div><span class="eyebrow">DEVICES</span><h2>Your devices</h2></div><span class="pill">{{ devices.length }} saved</span></div>
       <div v-if="devices.length" class="device-list">
         <article v-for="device in devices" :key="device.controller" class="device-card">
-          <button class="device-heading" type="button" @click="toggleDevice(device.controller)"><div class="device-copy"><strong>{{ device.name }}</strong><span>{{ device.controller }}</span><small>{{ device.dashboards.length }} dashboard{{ device.dashboards.length === 1 ? "" : "s" }}</small></div><span class="device-chevron">{{ expandedDevices.includes(device.controller) ? "⌄" : "›" }}</span></button>
+          <div class="device-heading-row"><button class="device-heading" type="button" @click="toggleDevice(device.controller)"><div class="device-copy"><strong>{{ device.name }}</strong><span>{{ device.controller }}</span><small>{{ device.dashboards.length }} dashboard{{ device.dashboards.length === 1 ? "" : "s" }}</small></div><span class="device-chevron">{{ expandedDevices.includes(device.controller) ? "⌄" : "›" }}</span></button><div class="device-actions"><button type="button" aria-label="Rename device" title="Rename device" @click="prepareEditDevice(device)">✎</button><button type="button" aria-label="Delete device" title="Delete device" @click="deleteDevice(device.controller)">⌫</button></div></div>
           <div v-if="expandedDevices.includes(device.controller)" class="device-dashboards">
             <div class="dashboard-grid" :class="'dashboard-count-' + device.dashboards.length">
               <button v-for="dashboard in device.dashboards" :key="dashboard.id" class="dashboard-tile" type="button" @click="openDashboard(dashboard)" @touchstart="startLongPress(dashboard)" @touchend="cancelLongPress" @touchmove="cancelLongPress" @mousedown="startLongPress(dashboard)" @mouseup="cancelLongPress" @mouseleave="cancelLongPress"><span class="tile-icon">▦</span><strong>{{ dashboard.name }}</strong><span class="tile-url">{{ dashboard.panelUrl }}</span></button>
@@ -292,6 +298,8 @@ window.addEventListener('android-back', handleAndroidBack)
       </section>
     </div>
 
+
+    <div v-if="showDeviceEdit" class="modal-backdrop" @click.self="showDeviceEdit=false"><section class="modal card"><div class="section-heading"><div><span class="eyebrow">DEVICE</span><h2>Rename device</h2></div><button class="close" @click="showDeviceEdit=false">×</button></div><label for="device-name-edit">Device name</label><input id="device-name-edit" v-model="deviceEditName" placeholder="Home, VPS, Router…"/><div class="modal-actions"><button class="secondary" @click="showDeviceEdit=false">Cancel</button><button @click="saveDeviceName" :disabled="!deviceEditName.trim()">Save</button></div></section></div>
     <div v-if="showEdit" class="modal-backdrop" @click.self="showEdit = false">
       <section class="modal card">
         <div class="section-heading"><div><span class="eyebrow">CONNECTION</span><h2>Edit controller</h2></div><button class="close" @click="showEdit = false">×</button></div>
