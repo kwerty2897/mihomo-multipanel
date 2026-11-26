@@ -33,7 +33,7 @@ watch(showSettings, value => {
 
 const themeMenuOpen = ref(false)
 const themeLabels: Record<Theme, string> = { system: 'Use system theme', light: 'Light', dark: 'Dark' }
-const greeting = computed(() => { const hour = new Date().getHours(); return hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening' })
+const greeting = computed(() => { const hour = new Date().getHours(); return hour < 5 ? 'night' : hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : hour < 22 ? 'evening' : 'night' })
 const importInput = ref<HTMLInputElement | null>(null)
 const importMessage = ref('')
 watch([theme, animationsEnabled], ([themeValue, animationsValue]) => {
