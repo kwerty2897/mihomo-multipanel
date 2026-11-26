@@ -157,7 +157,14 @@ jobs:
           grep -q 'android:usesCleartextTraffic="true"' "$MANIFEST"
           # Monitor connectivity so the WebView can prefer cached panel assets offline.
           if ! grep -q 'android.permission.ACCESS_NETWORK_STATE' "$MANIFEST"; then
-            sed -i '/<application/i\\    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />' "$MANIFEST"
+            python3 - "$MANIFEST" <<'PY'
+          from pathlib import Path
+          import sys
+          path = Path(sys.argv[1])
+          source = path.read_text()
+          source = source.replace("<application", '<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />\\n    <application', 1)
+          path.write_text(source)
+          PY
           fi
           grep -q 'android.permission.ACCESS_NETWORK_STATE' "$MANIFEST"
       - name: Generate app icons from SVG
