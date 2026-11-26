@@ -367,3 +367,10 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible),[role="button"]:foc
 :root .controller-card-indicator.online{background:#42b883;box-shadow:0 0 0 4px #42b88322}
 :root .controller-card-indicator.offline{background:#e26c73;box-shadow:0 0 0 4px #e26c7322}
 :root .controller-card-indicator:disabled{opacity:.5}
+
+/* Mobile viewport recovery: prevent horizontal clipping and keep connection editors above the keyboard. */
+html,body,#app{width:100%;max-width:100%;overflow-x:hidden;margin:0}
+.shell{width:100%;max-width:760px;margin-inline:auto}
+.modal-backdrop{align-items:flex-start;justify-content:center;overflow-y:auto;overscroll-behavior:contain;padding:calc(env(safe-area-inset-top,0px) + 10px) 12px calc(env(safe-area-inset-bottom,0px) + 12px)}
+.modal{width:min(100%,480px);max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 24px);margin:auto 0;overflow-y:auto;overscroll-behavior:contain}
+@media(max-height:700px){.modal{max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 16px)}}
