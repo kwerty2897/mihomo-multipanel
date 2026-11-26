@@ -274,7 +274,6 @@ jobs:
                   }
                   var flags = window.decorView.systemUiVisibility
                   flags = flags or android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                      android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
                       android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                   flags = if (darkTheme) {
                       flags and android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv() and
