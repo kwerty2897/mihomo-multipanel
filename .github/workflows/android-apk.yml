@@ -304,40 +304,13 @@ jobs:
           mkdir -p "$RES/drawable" "$RES/mipmap-anydpi-v26"
           # Use Tauri's generated density-specific PNG presets directly.
           # SVG source is transparent, so generated launcher PNGs retain transparent backgrounds.
-          cat > "$RES/values/ic_launcher_background.xml" <<'XML'
-          <resources>
-            <color name="ic_launcher_background">#00000000</color>
-          </resources>
-          XML
-          # Transparent adaptive icon: black cube with complete rear edges and white outline.
-          cat > "$RES/drawable/ic_launcher_foreground.xml" <<'XML'
-          <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="512" android:viewportHeight="512">
-            <group android:translateX="92" android:translateY="92" android:scaleX="0.64" android:scaleY="0.64">
-              <path android:fillColor="#000000" android:pathData="M256,64 L432,160 L432,352 L256,448 L80,352 L80,160 Z"/>
-              <path android:fillColor="#00000000" android:strokeColor="#FFFFFF" android:strokeWidth="16" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M256,64 L432,160 L432,352 L256,448 L80,352 L80,160 Z"/>
-            </group>
-          </vector>
-          XML
-          cat > "$RES/drawable/ic_launcher_monochrome.xml" <<'XML'
-          <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="512" android:viewportHeight="512">
-            <group android:translateX="92" android:translateY="92" android:scaleX="0.64" android:scaleY="0.64">
-              <path android:fillColor="#FFFFFFFF" android:pathData="M256,64 L432,160 L432,352 L256,448 L80,352 L80,160 Z"/>
-            </group>
-          </vector>
-          XML
-          mkdir -p "$RES/drawable-v24" "$RES/mipmap-anydpi-v26"
-          cp "$RES/drawable/ic_launcher_foreground.xml" "$RES/drawable-v24/ic_launcher_foreground.xml"
-
-          # Keep launcher icon identical to About, never apply system monochrome tint.
-          for name in ic_launcher ic_launcher_round; do
-            cat > "$RES/mipmap-anydpi-v26/$name.xml" <<'XML'
-          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-            <background android:drawable="@android:color/transparent"/>
-            <foreground android:drawable="@drawable/ic_launcher_foreground"/>
-            <monochrome android:drawable="@drawable/ic_launcher_monochrome"/>
-          </adaptive-icon>
-          XML
-          done
+          # Copy repository-maintained Android icon resource presets.
+          cp android-templates/res/values/ic_launcher_background.xml "$RES/values/"
+          cp android-templates/res/drawable/ic_launcher_foreground.xml "$RES/drawable/"
+          cp android-templates/res/drawable/ic_launcher_monochrome.xml "$RES/drawable/"
+          cp android-templates/res/drawable/ic_launcher_foreground.xml "$RES/drawable-v24/"
+          cp android-templates/res/mipmap-anydpi-v26/ic_launcher.xml "$RES/mipmap-anydpi-v26/"
+          cp android-templates/res/mipmap-anydpi-v26/ic_launcher_round.xml "$RES/mipmap-anydpi-v26/"
 
           if grep -q 'android:icon=' "$MANIFEST"; then
             sed -i 's#android:icon="[^"]*"#android:icon="@mipmap/ic_launcher"#' "$MANIFEST"
