@@ -19,19 +19,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
       - uses: actions/cache@v4
         with:
           path: ~/.npm
           key: npm-${{ runner.os }}-${{ hashFiles('package.json') }}
           restore-keys: npm-${{ runner.os }}-
-      - uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: pip-${{ runner.os }}-${{ hashFiles('package.json') }}
-          restore-keys: pip-${{ runner.os }}-
       - uses: gradle/actions/setup-gradle@v4
         with:
           cache-disabled: false
@@ -53,24 +45,8 @@ jobs:
           cache-all: true
       - name: Install npm dependencies
         run: npm install
-      - name: Generate app icon
-        run: |
-          python -m pip install --cache-dir ~/.cache/pip Pillow cairosvg
-          mkdir -p src-tauri/icons
-          cat > src-tauri/icons/icon.svg <<'SVG'
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-            <!-- MetaCubeXD-inspired mark, transparent canvas, no shadow/background -->
-            <g fill="none" stroke="#dadedf" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M256 76 405 161 405 344 256 430 107 344 107 161Z"/>
-              <path d="M107 161 256 247 405 161 M256 247 256 430"/>
-              <path d="M256 103 256 221 M145 322 235 270 M277 270 367 322"/>
-            </g>
-          </svg>
-          SVG
-          python - <<'PY'
-          import cairosvg
-          cairosvg.svg2png(url='src-tauri/icons/icon.svg',write_to='src-tauri/icons/icon.png',output_width=512,output_height=512)
-          PY
+      - name: Generate app icons from SVG
+        run: npx tauri icon src-tauri/icons/icon.svg
       - name: Initialize Android project
         run: |
           rm -rf src-tauri/gen/android
@@ -78,16 +54,7 @@ jobs:
       - name: Configure Android adaptive and themed icons
         run: |
           RES=src-tauri/gen/android/app/src/main/res
-          mkdir -p "$RES/drawable" "$RES/mipmap-anydpi-v26" "$RES/mipmap-mdpi" "$RES/mipmap-hdpi" "$RES/mipmap-xhdpi" "$RES/mipmap-xxhdpi" "$RES/mipmap-xxxhdpi"
-          python - <<'PY'
-          from PIL import Image
-          base=Image.open("src-tauri/icons/icon.png").convert("RGBA")
-          for bucket,size in [("mdpi",48),("hdpi",72),("xhdpi",96),("xxhdpi",144),("xxxhdpi",192)]:
-              d=f"src-tauri/gen/android/app/src/main/res/mipmap-{bucket}"
-              icon=base.resize((size,size),Image.Resampling.LANCZOS)
-              icon.save(f"{d}/ic_launcher.png")
-              icon.save(f"{d}/ic_launcher_round.png")
-          PY
+          mkdir -p "$RES/drawable" "$RES/mipmap-anydpi-v26"
           cat > "$RES/drawable/ic_launcher_foreground.xml" <<'XML'
           <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="512" android:viewportHeight="512">
             <path android:fillColor="#00000000" android:strokeColor="#dadedf" android:strokeWidth="12" android:strokeLineJoin="round" android:pathData="M256,66 L421,157 L421,354 L256,446 L91,354 L91,157 Z"/>
