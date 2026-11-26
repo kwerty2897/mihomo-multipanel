@@ -75,11 +75,11 @@ jobs:
             <monochrome android:drawable="@drawable/ic_launcher_monochrome"/>
           </adaptive-icon>
           XML
-      - name: Build APK
-        run: npx tauri android build --apk
+      - name: Build signed debug APK
+        run: cd src-tauri/gen/android && ./gradlew assembleDebug
       - uses: actions/upload-artifact@v4
         with:
           name: mihomo-multipanel-apk
-          path: src-tauri/gen/android/app/build/outputs/apk/**/*.apk
+          path: src-tauri/gen/android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
