@@ -99,7 +99,7 @@ const current = computed(() => profiles.value.find(p => p.id === activeId.value)
 const devices = computed(() => { const groups = new Map<string, Profile[]>(); for (const p of profiles.value) { const key = p.controller; if (!groups.has(key)) groups.set(key, []); groups.get(key)!.push(p) } return Array.from(groups.entries()).map(([controller, dashboards]) => ({ controller, name: dashboards[0]?.name || controller, dashboards })) })
 const expandedDevices = ref<string[]>(devices.value.map(d => d.controller))
 function toggleDevice(controller: string) { expandedDevices.value = expandedDevices.value.includes(controller) ? expandedDevices.value.filter(x => x !== controller) : [...expandedDevices.value, controller] }
-function openDashboard(profile: Profile) { activeId.value = profile.id; panelLoading.value = true; panelOpen.value = true }
+function openDashboard(profile: Profile) { activeId.value = profile.id; panelLoading.value = true; panelOpen.value = true }\nfunction prepareAddDevice() { name.value = ""; host.value = "127.0.0.1"; port.value = "9090"; selectedTemplateId.value = panelTemplates.value[0]?.id || ""; secret.value = ""; mihomoUrl.value = ""; manualPanelUrl.value = ""; showAdd.value = true }\nfunction prepareAddDashboard(device: { name: string; dashboards: Profile[] }) { name.value = device.name; host.value = device.dashboards[0]?.host || ""; port.value = device.dashboards[0]?.port || "9090"; secret.value = device.dashboards[0]?.secret || ""; mihomoUrl.value = device.dashboards[0]?.mihomoUrl || ""; selectedTemplateId.value = panelTemplates.value[0]?.id || ""; manualPanelUrl.value = ""; showAdd.value = true }
 
 function normalizeUrl(value: string) {
   const v = value.trim()
