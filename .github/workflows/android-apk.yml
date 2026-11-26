@@ -64,6 +64,38 @@ jobs:
           source = path.read_text()
           pattern = r"class MainActivity\s*:\s*TauriActivity\(\)\s*(?:\{\s*\})?"
           replacement = """class MainActivity : TauriActivity() {
+              private var cacheManager: android.net.ConnectivityManager? = null
+              private var cacheCallback: android.net.ConnectivityManager.NetworkCallback? = null
+
+              override fun onWebViewCreate(webView: android.webkit.WebView) {
+                  webView.settings.domStorageEnabled = true
+                  webView.settings.cacheMode = android.webkit.WebSettings.LOAD_CACHE_ELSE_NETWORK
+                  val manager = getSystemService(android.content.Context.CONNECTIVITY_SERVICE)
+                      as android.net.ConnectivityManager
+                  cacheManager = manager
+
+                  fun refreshCacheMode() {
+                      val caps = manager.activeNetwork?.let { manager.getNetworkCapabilities(it) }
+                      val online = caps?.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET) == true &&
+                          caps.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+                      webView.post {
+                          webView.settings.cacheMode = if (online)
+                              android.webkit.WebSettings.LOAD_DEFAULT
+                          else
+                              android.webkit.WebSettings.LOAD_CACHE_ELSE_NETWORK
+                      }
+                  }
+
+                  val callback = object : android.net.ConnectivityManager.NetworkCallback() {
+                      override fun onAvailable(network: android.net.Network) = refreshCacheMode()
+                      override fun onCapabilitiesChanged(network: android.net.Network, capabilities: android.net.NetworkCapabilities) = refreshCacheMode()
+                      override fun onLost(network: android.net.Network) = refreshCacheMode()
+                  }
+                  cacheCallback = callback
+                  try { manager.registerDefaultNetworkCallback(callback) } catch (_: Exception) {}
+                  refreshCacheMode()
+              }
+
               override fun onCreate(savedInstanceState: android.os.Bundle?) {
                   super.onCreate(savedInstanceState)
                   updateSystemBars()
@@ -72,6 +104,17 @@ jobs:
               override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
                   super.onConfigurationChanged(newConfig)
                   updateSystemBars()
+              }
+
+              override fun onDestroy() {
+                  val manager = cacheManager
+                  val callback = cacheCallback
+                  if (manager != null && callback != null) {
+                      try { manager.unregisterNetworkCallback(callback) } catch (_: Exception) {}
+                  }
+                  cacheCallback = null
+                  cacheManager = null
+                  super.onDestroy()
               }
 
               @Suppress("DEPRECATION")
@@ -112,6 +155,11 @@ jobs:
             sed -i 's#<application#<application android:usesCleartextTraffic="true"#' "$MANIFEST"
           fi
           grep -q 'android:usesCleartextTraffic="true"' "$MANIFEST"
+          # Monitor connectivity so the WebView can prefer cached panel assets offline.
+          if ! grep -q 'android.permission.ACCESS_NETWORK_STATE' "$MANIFEST"; then
+            sed -i '/<application/i\\    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />' "$MANIFEST"
+          fi
+          grep -q 'android.permission.ACCESS_NETWORK_STATE' "$MANIFEST"
       - name: Generate app icons from SVG
         run: npx tauri icon src-tauri/icons/icon.svg
       - name: Configure and verify Android launcher icons
