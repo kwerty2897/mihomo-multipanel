@@ -14,6 +14,8 @@ const panelOpen = ref(false)
 const panelLoading = ref(false)
 const showSettings = ref(false)
 const showAbout = ref(false)
+const themeMenuOpen = ref(false)
+const themeLabels: Record<Theme, string> = { system: 'Use system theme', light: 'Light', dark: 'Dark' }
 const importInput = ref<HTMLInputElement | null>(null)
 const importMessage = ref('')
 watch([theme, animationsEnabled], ([themeValue, animationsValue]) => {
@@ -143,11 +145,16 @@ function removeProfile(id: number) {
       <section class="modal card settings-modal">
         <div class="section-heading"><div><span class="eyebrow">PREFERENCES & BACKUP</span><h2>Settings</h2></div><button class="close" aria-label="Close settings" @click="showSettings = false">×</button></div>
         <label for="theme-choice">Appearance</label>
-        <select id="theme-choice" v-model="theme" class="settings-select">
-          <option value="system">Use system theme</option>
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-        </select>
+        <div class="theme-picker">
+          <button id="theme-choice" class="theme-picker-trigger" type="button" :aria-expanded="themeMenuOpen" aria-haspopup="listbox" @click="themeMenuOpen = !themeMenuOpen">
+            <span>{{ themeLabels[theme] }}</span><span class="theme-picker-chevron" :class="{ open: themeMenuOpen }">⌄</span>
+          </button>
+          <div v-if="themeMenuOpen" class="theme-picker-menu" role="listbox" aria-label="Appearance">
+            <button v-for="option in (['system', 'light', 'dark'] as Theme[])" :key="option" class="theme-picker-option" type="button" role="option" :aria-selected="theme === option" @click="theme = option; themeMenuOpen = false">
+              <span>{{ themeLabels[option] }}</span><span v-if="theme === option" class="theme-picker-check">✓</span>
+            </button>
+          </div>
+        </div>
         <div class="animation-setting">
           <div class="animation-setting-copy"><strong>Interface animations</strong><span>Subtle transitions and button feedback</span></div>
           <button class="switch" type="button" role="switch" :aria-checked="animationsEnabled" :class="{ enabled: animationsEnabled }" @click="animationsEnabled = !animationsEnabled"><span></span></button>
