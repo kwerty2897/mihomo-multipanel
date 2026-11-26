@@ -5,5 +5,5 @@
   "identifier": "dev.mihomo.multipanel",
   "build": {"frontendDist": "../dist", "beforeBuildCommand": "npm run build"},
   "app": {"windows": [{"title": "Mihomo MultiPanel", "width": 420, "height": 800, "minWidth": 360, "minHeight": 640}], "security": {"csp": null}},
-  "bundle": {"active": true, "targets": ["apk", "aab"], "android": {"minSdkVersion": 24}}
+  "bundle": {"active": true, "targets": ["all"], "android": {"minSdkVersion": 24}}
 }
