@@ -109,19 +109,24 @@ jobs:
           XML
       - name: Build optimized release APK via Tauri
         run: npx tauri android build --apk --split-per-abi
-      - name: Sign APKs (persistent key)
+      - name: Sign APKs (persistent key or temporary fallback)
         env:
           SIGNING_KEY_BASE64: ${{ secrets.ANDROID_SIGNING_KEY_BASE64 }}
           SIGNING_KEY_PASSWORD: ${{ secrets.ANDROID_SIGNING_KEY_PASSWORD }}
           SIGNING_KEY_ALIAS: ${{ secrets.ANDROID_SIGNING_KEY_ALIAS }}
         run: |
           set -euo pipefail
-          if [ -z "$SIGNING_KEY_BASE64" ] || [ -z "$SIGNING_KEY_PASSWORD" ] || [ -z "$SIGNING_KEY_ALIAS" ]; then
-            echo "Missing Android signing secrets. Configure ANDROID_SIGNING_KEY_BASE64, ANDROID_SIGNING_KEY_PASSWORD and ANDROID_SIGNING_KEY_ALIAS." >&2
-            exit 1
-          fi
           KEYSTORE="$RUNNER_TEMP/mihomo-multipanel-signing.jks"
-          echo "$SIGNING_KEY_BASE64" | base64 -d > "$KEYSTORE"
+          if [ -n "$SIGNING_KEY_BASE64" ] && [ -n "$SIGNING_KEY_PASSWORD" ] && [ -n "$SIGNING_KEY_ALIAS" ]; then
+            echo "Using configured persistent signing key."
+            echo "$SIGNING_KEY_BASE64" | base64 -d > "$KEYSTORE"
+          else
+            echo "::warning::Persistent signing secrets are not configured. APKs will be signed with an ephemeral key; future updates signed this way cannot update APKs signed with another key."
+            SIGNING_KEY_PASSWORD="$(openssl rand -hex 24)"
+            SIGNING_KEY_ALIAS="multipanel-temporary"
+            keytool -genkeypair -v -keystore "$KEYSTORE" -storepass "$SIGNING_KEY_PASSWORD" -keypass "$SIGNING_KEY_PASSWORD" -alias "$SIGNING_KEY_ALIAS" -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Mihomo MultiPanel, OU=Android, O=MultiPanel, L=, ST=, C=US"
+          fi
+          export SIGNING_KEY_PASSWORD SIGNING_KEY_ALIAS
           APKSIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
           shopt -s globstar nullglob
           apks=(src-tauri/gen/android/app/build/outputs/apk/**/*.apk)
