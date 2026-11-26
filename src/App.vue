@@ -14,7 +14,7 @@ const theme = ref<Theme>(['system', 'light', 'dark'].includes(savedSettings.them
 const animationsEnabled = ref(savedSettings.animations !== false)
 const hidePanelToolbar = ref(savedSettings.hidePanelToolbar === true)
 const panelTemplates = ref<PanelTemplate[]>(Array.isArray(savedSettings.panelTemplates) && savedSettings.panelTemplates.length ? savedSettings.panelTemplates : DEFAULT_TEMPLATES)
-const selectedTemplateId = ref('metacubexd')
+const selectedTemplateId = ref('')
 const templateName = ref('')
 const templateUrl = ref('')
 const editingTemplateId = ref('')
@@ -87,6 +87,7 @@ const host = ref('')
 const port = ref('9090')
 const secret = ref('')
 const mihomoUrl = ref('')
+const manualPanelUrl = ref('')
 let longPressTimer: number | null = null
 function startLongPress(profile: Profile) { cancelLongPress(); longPressTimer = window.setTimeout(() => { editingId.value = profile.id; name.value = profile.name; host.value = profile.host || (() => { try { return new URL(profile.controller).hostname } catch { return '' } })(); port.value = profile.port || (() => { try { return new URL(profile.controller).port || '9090' } catch { return '9090' } })(); secret.value = profile.secret || ''; mihomoUrl.value = profile.mihomoUrl || ''; showEdit.value = true }, 550) }
 function cancelLongPress() { if (longPressTimer !== null) window.clearTimeout(longPressTimer); longPressTimer = null }
@@ -111,12 +112,12 @@ function saveEdit() {
 }
 function addProfile() {
   const selected = panelTemplates.value.find(t => t.id === selectedTemplateId.value)
-  const p = normalizeUrl(renderTemplate(selected?.url || ''))
+  const p = normalizeUrl(selected ? renderTemplate(selected.url) : manualPanelUrl.value)
   const c = controllerFromFields()
   if (!c || !p) return
-  const parsed = (() => { try { return new URL(c) } catch { return null } })(); const item: Profile = { id: Date.now(), name: name.value.trim() || c, controller: normalizeUrl(mihomoUrl.value) || c, panelUrl: p, panelTemplateId: selected?.id, host: host.value.trim() || parsed?.hostname || '', port: port.value.trim() || parsed?.port || '9090', secret: secret.value, mihomoUrl: normalizeUrl(mihomoUrl.value) || '' }
+  const parsed = (() => { try { return new URL(c) } catch { return null } })(); const item: Profile = { id: Date.now(), name: name.value.trim() || c, controller: normalizeUrl(mihomoUrl.value) || c, panelUrl: p, panelTemplateId: selected?.id || '', host: host.value.trim() || parsed?.hostname || '', port: port.value.trim() || parsed?.port || '9090', secret: secret.value, mihomoUrl: normalizeUrl(mihomoUrl.value) || '' }
   profiles.value.push(item); activeId.value = item.id
-  name.value = ''; host.value = ''; port.value = '9090'; secret.value = ''; mihomoUrl.value = ''; connectionUrl.value = ''; showAdd.value = false
+  name.value = ''; host.value = ''; port.value = '9090'; secret.value = ''; mihomoUrl.value = ''; manualPanelUrl.value = ''; selectedTemplateId.value = ''; connectionUrl.value = ''; showAdd.value = false
 }
 function exportSettings() {
   const payload = { settings: { theme: theme.value, animations: animationsEnabled.value, hidePanelToolbar: hidePanelToolbar.value, panelTemplates: panelTemplates.value }, profiles: profiles.value }
@@ -237,7 +238,7 @@ window.addEventListener('android-back', handleAndroidBack)
         </div>
       </div>
       <div v-else class="empty">No saved connections yet. Add your Mihomo controller and dashboard URL.</div>
-      <button class="add-button" @click="host = '127.0.0.1'; port = '9090'; selectedTemplateId = 'metacubexd'; showAdd = true"><span class="plus">＋</span> Add connection</button>
+      <button class="add-button" @click="host = '127.0.0.1'; port = '9090'; selectedTemplateId = ''; secret = ''; mihomoUrl = ''; manualPanelUrl = ''; showAdd = true"><span class="plus">＋</span> Add connection</button>
     </section>
     <section v-if="current" id="dashboard" class="panels">
       <div class="section-heading"><div><span class="eyebrow">DASHBOARD</span><h2>{{ current.name }}</h2></div></div>
@@ -312,9 +313,10 @@ window.addEventListener('android-back', handleAndroidBack)
       <section class="modal card">
         <div class="section-heading"><div><span class="eyebrow">NEW CONNECTION</span><h2>Add controller</h2></div><button class="close" @click="showAdd = false">×</button></div>
         <label for="profile-name">Name (optional)</label><input id="profile-name" v-model="name" placeholder="Home, VPS, Router…"/>
-        <label for="add-host">Host / IP</label><input id="add-host" v-model="host" placeholder="192.168.1.1" autocapitalize="none" spellcheck="false"/><label for="add-port">Port</label><input id="add-port" v-model="port" inputmode="numeric" placeholder="9090"/><label for="add-secret">Secret (optional)</label><input id="add-secret" v-model="secret" type="password" autocapitalize="none" spellcheck="false"/>
-        <label for="panel-template-choice">Dashboard template</label><select id="panel-template-choice" v-model="selectedTemplateId"><option v-for="t in panelTemplates" :key="t.id" :value="t.id">{{ t.name }}</option></select><p class="hint">Template fields are filled automatically. You can customize templates in Settings.</p>
-        <label for="add-mihomo-url">Mihomo URL (optional)</label><input id="add-mihomo-url" v-model="mihomoUrl" placeholder="http://192.168.1.1:9090" autocapitalize="none" spellcheck="false"/><p class="hint">Optional direct API address, used for availability checks if the dashboard is hosted elsewhere.</p>
+        <label for="add-host">Host / IP</label><input id="add-host" v-model="host" placeholder="192.168.1.1" autocapitalize="none" spellcheck="false"/>
+        <label for="panel-template-choice">Dashboard template</label><select id="panel-template-choice" v-model="selectedTemplateId" class="app-select"><option value="">Not selected</option><option v-for="t in panelTemplates" :key="t.id" :value="t.id">{{ t.name }}</option></select><p class="hint">Select a template to configure the connection fields, or leave it unselected and enter the dashboard URL manually.</p>
+        <template v-if="selectedTemplateId"><label for="add-port">Port</label><input id="add-port" v-model="port" inputmode="numeric" placeholder="9090"/><label for="add-secret">Secret (optional)</label><input id="add-secret" v-model="secret" type="password" autocapitalize="none" spellcheck="false"/><label for="add-mihomo-url">Mihomo URL (optional)</label><input id="add-mihomo-url" v-model="mihomoUrl" placeholder="http://192.168.1.1:9090" autocapitalize="none" spellcheck="false"/><p class="hint">Optional direct API address, used for availability checks if the dashboard is hosted elsewhere.</p></template>
+        <template v-else><label for="manual-panel-url">Dashboard URL</label><input id="manual-panel-url" v-model="manualPanelUrl" placeholder="https://dashboard.example" autocapitalize="none" spellcheck="false"/><p class="hint">The dashboard will open as entered. Configure its connection manually inside the dashboard.</p></template>
         <div class="modal-actions"><button class="secondary" @click="showAdd = false">Cancel</button><button @click="addProfile" :disabled="!controllerFromFields()">Save</button></div>
       </section>
     </div>
