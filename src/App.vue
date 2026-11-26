@@ -14,7 +14,7 @@ const theme = ref<Theme>(['system', 'light', 'dark'].includes(savedSettings.them
 const animationsEnabled = ref(savedSettings.animations !== false)
 const hidePanelToolbar = ref(savedSettings.hidePanelToolbar === true)
 const panelTemplates = ref<PanelTemplate[]>(Array.isArray(savedSettings.panelTemplates) && savedSettings.panelTemplates.length ? savedSettings.panelTemplates : DEFAULT_TEMPLATES)
-const selectedTemplateId = ref('yacd')
+const selectedTemplateId = ref('metacubexd')
 const templateName = ref('')
 const templateUrl = ref('')
 const editingTemplateId = ref('')
@@ -237,7 +237,7 @@ window.addEventListener('android-back', handleAndroidBack)
         </div>
       </div>
       <div v-else class="empty">No saved connections yet. Add your Mihomo controller and dashboard URL.</div>
-      <button class="add-button" @click="showAdd = true"><span class="plus">＋</span> Add connection</button>
+      <button class="add-button" @click="host = '127.0.0.1'; port = '9090'; selectedTemplateId = 'metacubexd'; showAdd = true"><span class="plus">＋</span> Add connection</button>
     </section>
     <section v-if="current" id="dashboard" class="panels">
       <div class="section-heading"><div><span class="eyebrow">DASHBOARD</span><h2>{{ current.name }}</h2></div></div>
