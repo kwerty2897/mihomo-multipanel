@@ -179,7 +179,8 @@ function removeProfile(id: number) {
 function handleAndroidBack() {
   if (showAbout.value) { showAbout.value = false; return }
   if (showSettings.value) { themeMenuOpen.value = false; showSettings.value = false; return }
-  if (showEdit.value) { showEdit.value = false; return }\n  if (showAdd.value) { showAdd.value = false; return }
+  if (showEdit.value) { showEdit.value = false; return }
+  if (showAdd.value) { showAdd.value = false; return }
   if (panelOpen.value) { closePanel(); return }
 }
 window.addEventListener('android-back', handleAndroidBack)
