@@ -59,6 +59,15 @@ jobs:
         run: |
           RES=src-tauri/gen/android/app/src/main/res
           mkdir -p "$RES/drawable" "$RES/mipmap-anydpi-v26" "$RES/mipmap-mdpi" "$RES/mipmap-hdpi" "$RES/mipmap-xhdpi" "$RES/mipmap-xxhdpi" "$RES/mipmap-xxxhdpi"
+          python - <<'PY'
+          from PIL import Image
+          base=Image.open("src-tauri/icons/icon.png").convert("RGBA")
+          for bucket,size in [("mdpi",48),("hdpi",72),("xhdpi",96),("xxhdpi",144),("xxxhdpi",192)]:
+              d=f"src-tauri/gen/android/app/src/main/res/mipmap-{bucket}"
+              icon=base.resize((size,size),Image.Resampling.LANCZOS)
+              icon.save(f"{d}/ic_launcher.png")
+              icon.save(f"{d}/ic_launcher_round.png")
+          PY
           cat > "$RES/drawable/ic_launcher_foreground.xml" <<'XML'
           <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="512" android:viewportHeight="512">
             <path android:fillColor="#00000000" android:strokeColor="#dadedf" android:strokeWidth="12" android:strokeLineJoin="round" android:pathData="M256,66 L421,157 L421,354 L256,446 L91,354 L91,157 Z"/>
