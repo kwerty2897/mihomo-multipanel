@@ -97,7 +97,7 @@ function saveEdit() {
   const panel = 'https://metacubex.github.io/metacubexd/#/setup?http=true&hostname=' + encodeURIComponent(host.value.trim()) + '&port=' + encodeURIComponent(port.value.trim()) + '&secret=' + encodeURIComponent(secret.value)
   const index = profiles.value.findIndex(p => p.id === editingId.value)
   if (index < 0) return
-  profiles.value[index] = { ...profiles.value[index], name: name.value.trim() || controller, controller, panelUrl: panel, host: host.value.trim(), port: port.value.trim(), secret: secret.value, mihomoUrl: normalizeUrl(mihomoUrl.value) || '' }
+  profiles.value[index] = { ...profiles.value[index], name: name.value.trim() || controller, controller: normalizeUrl(mihomoUrl.value) || controller, panelUrl: profiles.value[index].panelUrl, host: host.value.trim(), port: port.value.trim(), secret: secret.value, mihomoUrl: normalizeUrl(mihomoUrl.value) || '' }
   showEdit.value = false
   editingId.value = null
 }
@@ -105,7 +105,7 @@ function addProfile() {
   const p = normalizeUrl(connectionUrl.value)
   const c = deriveController(connectionUrl.value)
   if (!c || !p) return
-  const item: Profile = { id: Date.now(), name: name.value.trim() || c, controller: mihomoUrl.value.trim() ? (normalizeUrl(mihomoUrl.value) || c) : c, panelUrl: p, host: host.value.trim(), port: port.value.trim(), secret: secret.value, mihomoUrl: normalizeUrl(mihomoUrl.value) || '' }
+  const parsed = (() => { try { return new URL(c) } catch { return null } })(); const item: Profile = { id: Date.now(), name: name.value.trim() || c, controller: normalizeUrl(mihomoUrl.value) || c, panelUrl: p, host: parsed?.hostname || host.value.trim(), port: parsed?.port || port.value.trim() || '9090', secret: secret.value, mihomoUrl: normalizeUrl(mihomoUrl.value) || '' }
   profiles.value.push(item); activeId.value = item.id
   name.value = ''; host.value = ''; port.value = '9090'; secret.value = ''; mihomoUrl.value = ''; showAdd.value = false
 }
@@ -293,7 +293,7 @@ window.addEventListener('android-back', handleAndroidBack)
       <section class="modal card">
         <div class="section-heading"><div><span class="eyebrow">NEW CONNECTION</span><h2>Add controller</h2></div><button class="close" @click="showAdd = false">×</button></div>
         <label for="profile-name">Name (optional)</label><input id="profile-name" v-model="name" placeholder="Home, VPS, Router…"/>
-        <label for="connection-url">Dashboard / controller URL</label><input id="connection-url" :value="connectionUrl" @input="connectionUrl = ($event.target as HTMLInputElement).value.toLowerCase()" placeholder="http://192.168.1.1:9090/ui/metacubexd" autocapitalize="none" spellcheck="false"/>
+        <label for="connection-url">Dashboard / controller URL</label><input id="connection-url" :value="connectionUrl" @input="connectionUrl = ($event.target as HTMLInputElement).value" placeholder="http://192.168.1.1:9090/ui/metacubexd" autocapitalize="none" spellcheck="false"/>
         <label for="add-mihomo-url">Mihomo URL (optional)</label><input id="add-mihomo-url" v-model="mihomoUrl" placeholder="http://192.168.1.1:9090" autocapitalize="none" spellcheck="false"/><p class="hint">Optional direct Mihomo API address, used for connection status checks when the dashboard is hosted elsewhere.</p><p class="hint">Enter the dashboard URL. The controller address is detected automatically from its origin.</p>
         <div class="modal-actions"><button class="secondary" @click="showAdd = false">Cancel</button><button @click="addProfile" :disabled="!deriveController(connectionUrl)">Save</button></div>
       </section>
