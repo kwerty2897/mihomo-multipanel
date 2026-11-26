@@ -1,0 +1,1 @@
+fn main() { mihomo_multipanel_lib::run(); }
