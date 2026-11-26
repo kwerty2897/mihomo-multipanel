@@ -19,6 +19,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-disabled: false
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -31,11 +39,15 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+          cache-all: true
       - name: Install npm dependencies
-        run: npm install
+        run: npm ci
       - name: Generate app icon
         run: |
-          python -m pip install Pillow cairosvg
+          python -m pip install --cache-dir ~/.cache/pip Pillow cairosvg
           mkdir -p src-tauri/icons
           cat > src-tauri/icons/icon.svg <<'SVG'
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
