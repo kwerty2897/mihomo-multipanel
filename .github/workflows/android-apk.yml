@@ -89,17 +89,30 @@ jobs:
           XML
       - name: Build optimized release APK via Tauri
         run: npx tauri android build --apk --split-per-abi
-      - name: Sign APKs
+      - name: Sign APKs (persistent key)
+        env:
+          SIGNING_KEY_BASE64: ${{ secrets.ANDROID_SIGNING_KEY_BASE64 }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.ANDROID_SIGNING_KEY_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.ANDROID_SIGNING_KEY_ALIAS }}
         run: |
-          set -e
+          set -euo pipefail
+          if [ -z "$SIGNING_KEY_BASE64" ] || [ -z "$SIGNING_KEY_PASSWORD" ] || [ -z "$SIGNING_KEY_ALIAS" ]; then
+            echo "Missing Android signing secrets. Configure ANDROID_SIGNING_KEY_BASE64, ANDROID_SIGNING_KEY_PASSWORD and ANDROID_SIGNING_KEY_ALIAS." >&2
+            exit 1
+          fi
           KEYSTORE="$RUNNER_TEMP/mihomo-multipanel-signing.jks"
-          keytool -genkeypair -noprompt -v -keystore "$KEYSTORE" -storepass android -keypass android -alias multipanel -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Mihomo MultiPanel, OU=Android, O=Open Source, L=NA, ST=NA, C=US"
-          for apk in src-tauri/gen/android/app/build/outputs/apk/**/*.apk; do
-            [ -f "$apk" ] || continue
-            apksigner sign --ks "$KEYSTORE" --ks-pass pass:android --key-pass pass:android "$apk"
-            apksigner verify "$apk"
-            mv "$apk" "${apk%-unsigned.apk}.apk"
+          echo "$SIGNING_KEY_BASE64" | base64 -d > "$KEYSTORE"
+          APKSIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
+          shopt -s globstar nullglob
+          apks=(src-tauri/gen/android/app/build/outputs/apk/**/*.apk)
+          for apk in "${apks[@]}"; do
+            [[ "$apk" == *-unsigned.apk ]] || continue
+            "$APKSIGNER" sign --ks "$KEYSTORE" --ks-pass env:SIGNING_KEY_PASSWORD --key-pass env:SIGNING_KEY_PASSWORD --ks-key-alias "$SIGNING_KEY_ALIAS" "$apk"
+            "$APKSIGNER" verify --verbose --print-certs "$apk"
+            signed="${apk%-unsigned.apk}.apk"
+            mv "$apk" "$signed"
           done
+          rm -f "$KEYSTORE"
       - uses: actions/upload-artifact@v4
         with:
           name: mihomo-multipanel-apk
