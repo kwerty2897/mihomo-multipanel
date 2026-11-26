@@ -10,6 +10,8 @@ const savedSettings = (() => {
 })()
 const theme = ref<Theme>(['system', 'light', 'dark'].includes(savedSettings.theme) ? savedSettings.theme : 'system')
 const animationsEnabled = ref(savedSettings.animations !== false)
+const hidePanelToolbar = ref(savedSettings.hidePanelToolbar === true)
+watch(hidePanelToolbar, value => { try { const current = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...current, hidePanelToolbar: value })) } catch { /* storage may be unavailable */ } })
 const panelOpen = ref(false)
 const panelLoading = ref(false)
 const controllerStatus = ref<'idle' | 'checking' | 'online' | 'offline'>('idle')
@@ -82,7 +84,7 @@ function addProfile() {
   name.value = ''; connectionUrl.value = ''; showAdd.value = false
 }
 function exportSettings() {
-  const payload = { settings: { theme: theme.value, animations: animationsEnabled.value }, profiles: profiles.value }
+  const payload = { settings: { theme: theme.value, animations: animationsEnabled.value, hidePanelToolbar: hidePanelToolbar.value }, profiles: profiles.value }
   const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))))
   const backup = { app: 'mihomo-multipanel', version: 2, exportedAt: new Date().toISOString(), secret: encoded }
   const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' })
@@ -98,7 +100,7 @@ async function importSettings(event: Event) {
   try {
     const data: unknown = JSON.parse(await file.text())
     if (!data || typeof data !== 'object') throw new Error('Invalid backup file.')
-    const outer = data as { app?: unknown; version?: unknown; profiles?: unknown; settings?: { theme?: unknown; animations?: unknown }; secret?: unknown }
+    const outer = data as { app?: unknown; version?: unknown; profiles?: unknown; settings?: { theme?: unknown; animations?: unknown; hidePanelToolbar?: unknown }; secret?: unknown }
     if (outer.app !== 'mihomo-multipanel') throw new Error('Unsupported backup format.')
     let backup: { profiles?: unknown; settings?: { theme?: unknown; animations?: unknown } }
     if (outer.version === 1) backup = outer
@@ -114,6 +116,7 @@ async function importSettings(event: Event) {
     const importedTheme = backup.settings?.theme
     theme.value = ['system', 'light', 'dark'].includes(String(importedTheme)) ? importedTheme as Theme : 'system'
     animationsEnabled.value = backup.settings?.animations !== false
+    hidePanelToolbar.value = backup.settings?.hidePanelToolbar === true
     importMessage.value = 'Backup imported successfully.'
   } catch (error) { importMessage.value = error instanceof Error ? error.message : 'Could not import backup.' }
   finally { input.value = '' }
@@ -173,7 +176,7 @@ window.addEventListener('android-back', handleAndroidBack)
 <template>
   <main class="shell">
     <section v-if="panelOpen && current" class="panel-viewer">
-      <header class="panel-toolbar">
+      <header v-if="!hidePanelToolbar" class="panel-toolbar">
         <button class="panel-toolbar-button" aria-label="Back to connections" @click="closePanel">‹</button>
         <div class="panel-toolbar-title"><strong>{{ current.name }}</strong><span>{{ current.panelUrl }}</span></div>
         <button class="panel-toolbar-button" aria-label="Reload panel" @click="reloadPanel">↻</button>
@@ -225,6 +228,11 @@ window.addEventListener('android-back', handleAndroidBack)
         <div class="animation-setting">
           <div class="animation-setting-copy"><strong>Interface animations</strong><span>Subtle transitions and button feedback</span></div>
           <button class="switch" type="button" role="switch" :aria-checked="animationsEnabled" :class="{ enabled: animationsEnabled }" @click="animationsEnabled = !animationsEnabled"><span></span></button>
+        </div>
+        <div class="settings-divider"></div>
+        <div class="animation-setting">
+          <div class="animation-setting-copy"><strong>Hide dashboard toolbar</strong><span>Hide the in-app back and reload buttons while viewing a panel</span></div>
+          <button class="switch" type="button" role="switch" :aria-checked="hidePanelToolbar" :class="{ enabled: hidePanelToolbar }" @click="hidePanelToolbar = !hidePanelToolbar"><span></span></button>
         </div>
         <div class="settings-divider"></div>
         <div class="backup-title">Backup & restore</div>
