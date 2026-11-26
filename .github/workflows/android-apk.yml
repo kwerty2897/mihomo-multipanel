@@ -65,10 +65,17 @@ jobs:
           done
 
           mkdir -p "$RES/drawable" "$RES/mipmap-anydpi-v26"
+          cat > "$RES/values/ic_launcher_colors.xml" <<'XML'
+          <resources>
+            <color name="ic_launcher_background">#202124</color>
+          </resources>
+          XML
           cat > "$RES/drawable/ic_launcher_foreground.xml" <<'XML'
           <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="512" android:viewportHeight="512">
-            <path android:fillColor="#00000000" android:strokeColor="#dadedf" android:strokeWidth="12" android:strokeLineJoin="round" android:pathData="M256,66 L421,157 L421,354 L256,446 L91,354 L91,157 Z"/>
-            <path android:fillColor="#00000000" android:strokeColor="#ffffff" android:strokeWidth="12" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M91,157 L256,250 L421,157 M256,250 L256,446 M256,94 L256,218 M123,336 L234,272 M278,272 L389,336"/>
+            <group android:translateX="72" android:translateY="72" android:scaleX="0.72" android:scaleY="0.72">
+              <path android:fillColor="#00000000" android:strokeColor="#dadedf" android:strokeWidth="12" android:strokeLineJoin="round" android:pathData="M256,66 L421,157 L421,354 L256,446 L91,354 L91,157 Z"/>
+              <path android:fillColor="#00000000" android:strokeColor="#ffffff" android:strokeWidth="12" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M91,157 L256,250 L421,157 M256,250 L256,446 M256,94 L256,218 M123,336 L234,272 M278,272 L389,336"/>
+            </group>
           </vector>
           XML
           cat > "$RES/drawable/ic_launcher_monochrome.xml" <<'XML'
@@ -80,7 +87,7 @@ jobs:
           for name in ic_launcher ic_launcher_round; do
             cat > "$RES/mipmap-anydpi-v26/$name.xml" <<'XML'
           <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-            <background android:drawable="@android:color/transparent"/>
+            <background android:drawable="@color/ic_launcher_background"/>
             <foreground android:drawable="@drawable/ic_launcher_foreground"/>
             <monochrome android:drawable="@drawable/ic_launcher_monochrome"/>
           </adaptive-icon>
@@ -154,7 +161,7 @@ jobs:
                 echo "::error::Keystore contains no PrivateKeyEntry. Check the uploaded keystore and password."
                 exit 1
               fi
-              echo "::warning::Configured alias is not a PrivateKeyEntry; selected a private-key alias from the keystore."
+              echo "::notice::Configured alias was not a PrivateKeyEntry; automatically selected the private-key alias: $alias"
             fi
             echo "Using persistent signing keystore and alias: $alias"
           else
