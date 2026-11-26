@@ -124,18 +124,6 @@ jobs:
           </resources>''')
           print("Generated splash styles based on",base)
           PY
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-          p=next(Path("src-tauri/gen/android/app/src/main").rglob("MainActivity.kt"))
-          s=p.read_text()
-          s=s.replace('private var appTheme = "system"', 'private var appTheme = "system"\n\n              private fun applyLaunchTheme(value: String) {\n                  when (value) {\n                      "light" -> setTheme(R.style.MultiPanelSplashLight)\n                      "dark" -> setTheme(R.style.MultiPanelSplashDark)\n                      else -> setTheme(R.style.MultiPanelSplashSystem)\n                  }\n              }')
-          s=s.replace('appTheme = if (value == "light" || value == "dark") value else "system"\n                      runOnUiThread { updateSystemBars() }', 'appTheme = if (value == "light" || value == "dark") value else "system"\n                      getSharedPreferences("multipanel_theme", android.content.Context.MODE_PRIVATE).edit().putString("theme", appTheme).apply()\n                      runOnUiThread { updateSystemBars() }')
-          s=s.replace('super.onCreate(savedInstanceState)\n                  updateSystemBars()', 'appTheme = getSharedPreferences("multipanel_theme", android.content.Context.MODE_PRIVATE).getString("theme", "system") ?: "system"\n                  applyLaunchTheme(appTheme)\n                  super.onCreate(savedInstanceState)\n                  updateSystemBars()')
-          if 'applyLaunchTheme(appTheme)' not in s: raise SystemExit("Could not patch MainActivity onCreate")
-          p.write_text(s)
-          print("Added persisted launch-theme selection to",p)
-          PY
       - name: Configure Android system navigation bar
         run: |
           set -euo pipefail
@@ -158,10 +146,19 @@ jobs:
 
               private var appTheme = "system"
 
+              private fun applyLaunchTheme(value: String) {
+                  when (value) {
+                      "light" -> setTheme(R.style.MultiPanelSplashLight)
+                      "dark" -> setTheme(R.style.MultiPanelSplashDark)
+                      else -> setTheme(R.style.MultiPanelSplashSystem)
+                  }
+              }
+
               inner class SystemBarsBridge {
                   @android.webkit.JavascriptInterface
                   fun setTheme(value: String) {
                       appTheme = if (value == "light" || value == "dark") value else "system"
+                      getSharedPreferences("multipanel_theme", android.content.Context.MODE_PRIVATE).edit().putString("theme", appTheme).apply()
                       runOnUiThread { updateSystemBars() }
                   }
               }
@@ -198,6 +195,8 @@ jobs:
               }
 
               override fun onCreate(savedInstanceState: android.os.Bundle?) {
+                  appTheme = getSharedPreferences("multipanel_theme", android.content.Context.MODE_PRIVATE).getString("theme", "system") ?: "system"
+                  applyLaunchTheme(appTheme)
                   super.onCreate(savedInstanceState)
                   updateSystemBars()
               }
