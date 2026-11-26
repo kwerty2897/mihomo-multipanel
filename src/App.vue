@@ -12,6 +12,10 @@ const theme = ref<Theme>(['system', 'light', 'dark'].includes(savedSettings.them
 const animationsEnabled = ref(savedSettings.animations !== false)
 const panelOpen = ref(false)
 const panelLoading = ref(false)
+const controllerStatus = ref<'idle' | 'checking' | 'online' | 'offline'>('idle')
+const controllerStatusMessage = ref('')
+const controllerCheckedAt = ref('')
+let statusRequest: AbortController | null = null
 const showSettings = ref(false)
 const showAbout = ref(false)
 const themeMenuOpen = ref(false)
@@ -89,6 +93,31 @@ async function importSettings(event: Event) {
   } catch (error) { importMessage.value = error instanceof Error ? error.message : 'Could not import backup.' }
   finally { input.value = '' }
 }
+async function checkController() {
+  if (!current.value) { controllerStatus.value = 'idle'; return }
+  statusRequest?.abort()
+  const request = new AbortController()
+  statusRequest = request
+  controllerStatus.value = 'checking'
+  controllerStatusMessage.value = ''
+  try {
+    const endpoint = current.value.controller.replace(/\\/$/, '') + '/version'
+    const response = await fetch(endpoint, { signal: request.signal, cache: 'no-store' })
+    if (!response.ok) throw new Error('HTTP ' + response.status)
+    const data = await response.json()
+    controllerStatus.value = 'online'
+    controllerStatusMessage.value = typeof data.version === 'string' ? 'Mihomo ' + data.version : 'Controller responds'
+    controllerCheckedAt.value = new Date().toLocaleTimeString()
+  } catch (error) {
+    if (request.signal.aborted) return
+    controllerStatus.value = 'offline'
+    controllerStatusMessage.value = error instanceof Error && error.name === 'TypeError'
+      ? 'Could not reach Controller (network or CORS)'
+      : 'Controller did not respond'
+    controllerCheckedAt.value = new Date().toLocaleTimeString()
+  }
+}
+watch(activeId, () => { if (current.value) checkController() }, { immediate: true })
 function openPanel() {
   if (!current.value) return
   panelLoading.value = true
@@ -136,6 +165,12 @@ function removeProfile(id: number) {
     </section>
     <section v-if="current" id="dashboard" class="panels">
       <div class="section-heading"><div><span class="eyebrow">DASHBOARD</span><h2>{{ current.name }}</h2></div></div>
+      <div class="controller-status card" :class="'state-' + controllerStatus">
+        <div class="status-row"><span class="status-indicator" :class="controllerStatus"></span><strong>{{ controllerStatus === 'checking' ? 'Checking controller…' : controllerStatus === 'online' ? 'Controller reachable' : controllerStatus === 'offline' ? 'Controller unavailable' : 'Controller status' }}</strong><button class="status-refresh" type="button" :disabled="controllerStatus === 'checking'" aria-label="Check controller again" @click="checkController">↻</button></div>
+        <p>{{ controllerStatusMessage || (controllerStatus === 'idle' ? 'Check the connection to Mihomo.' : controllerStatus === 'checking' ? 'Requesting /version…' : '') }}</p>
+        <span v-if="controllerCheckedAt" class="status-time">Last check: {{ controllerCheckedAt }}</span>
+        <p class="status-disclaimer">A failed check may also be caused by browser network restrictions (CORS).</p>
+      </div>
       <div class="preview card"><div class="preview-head"><span class="eyebrow">PANEL URL</span><span class="pill">Ready</span></div><h3>Dashboard</h3><p>{{ current.panelUrl }}</p><button class="open-panel-button" @click="openPanel">Open dashboard <span>↗</span></button><p class="hint">The dashboard opens inside the app. Its own update mechanism remains unchanged.</p></div>
     </section>
     <footer>MIHOMO MULTIPANEL <span>•</span> EARLY PROTOTYPE</footer>
