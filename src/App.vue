@@ -72,8 +72,14 @@ watch(profiles, value => {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(value)) } catch { /* storage may be unavailable */ }
 }, { deep: true })
 const showAdd = ref(false)
+const showEdit = ref(false)
+const editingId = ref<number | null>(null)
 const name = ref('')
 const connectionUrl = ref('')
+let longPressTimer: number | null = null
+function startLongPress(profile: Profile) { cancelLongPress(); longPressTimer = window.setTimeout(() => { editingId.value = profile.id; name.value = profile.name; connectionUrl.value = profile.panelUrl; showEdit.value = true }, 550) }
+function cancelLongPress() { if (longPressTimer !== null) window.clearTimeout(longPressTimer); longPressTimer = null }
+function saveEdit() { const p = normalizeUrl(connectionUrl.value); const c = deriveController(connectionUrl.value); if (!p || !c || editingId.value === null) return; const index = profiles.value.findIndex(x => x.id === editingId.value); if (index >= 0) profiles.value[index] = { ...profiles.value[index], name: name.value.trim() || c, controller: c, panelUrl: p }; showEdit.value = false; editingId.value = null; name.value = ''; connectionUrl.value = '' }
 function deriveController(value: string) { const normalized = normalizeUrl(value); if (!normalized) return ''; try { return new URL(normalized).origin } catch { return '' } }
 const current = computed(() => profiles.value.find(p => p.id === activeId.value) ?? null)
 function normalizeUrl(value: string) {
@@ -173,7 +179,7 @@ function removeProfile(id: number) {
 function handleAndroidBack() {
   if (showAbout.value) { showAbout.value = false; return }
   if (showSettings.value) { themeMenuOpen.value = false; showSettings.value = false; return }
-  if (showAdd.value) { showAdd.value = false; return }
+  if (showEdit.value) { showEdit.value = false; return }\n  if (showAdd.value) { showAdd.value = false; return }
   if (panelOpen.value) { closePanel(); return }
 }
 window.addEventListener('android-back', handleAndroidBack)
@@ -197,8 +203,8 @@ window.addEventListener('android-back', handleAndroidBack)
     <section id="connections" class="connection card">
       <div class="section-heading"><div><span class="eyebrow">CONTROLLERS</span><h2>Your connections</h2></div><span class="pill">{{ profiles.length }} saved</span></div>
       <div v-if="profiles.length" class="panel-list">
-        <div v-for="profile in profiles" :key="profile.id" class="panel-card" :class="{selected: activeId === profile.id}" role="button" tabindex="0" @click="activeId = profile.id" @keydown.enter="activeId = profile.id">
-          <div class="panel-mark">M</div><div class="panel-copy"><strong>{{ profile.name }}</strong><span>{{ profile.controller }}</span><span class="hint">{{ profile.panelUrl }}</span></div><button class="remove-profile" aria-label="Remove connection" @click.stop="removeProfile(profile.id)">×</button><div class="arrow">›</div>
+        <div v-for="profile in profiles" :key="profile.id" class="panel-card" :class="{selected: activeId === profile.id}" role="button" tabindex="0" @click="activeId = profile.id" @keydown.enter="activeId = profile.id" @pointerdown="startLongPress(profile)" @pointerup="cancelLongPress" @pointerleave="cancelLongPress" @pointercancel="cancelLongPress" @contextmenu.prevent="startLongPress(profile)">
+          <div class="panel-copy"><strong>{{ profile.name }}</strong><span>{{ profile.controller }}</span></div><button class="status-indicator controller-card-indicator" :class="activeId === profile.id ? controllerStatus : 'idle'" type="button" aria-label="Refresh controller availability" @click.stop="activeId = profile.id; checkController()"></button><div class="arrow">›</div>
         </div>
       </div>
       <div v-else class="empty">No saved connections yet. Add your Mihomo controller and dashboard URL.</div>
@@ -262,6 +268,15 @@ window.addEventListener('android-back', handleAndroidBack)
         <p class="hint about-description">A simple hub for managing Mihomo controllers and web dashboards.</p>
         <a class="about-link" href="https://github.com/kwerty2897/mihomo-multipanel" target="_blank" rel="noreferrer">GitHub project <span>↗</span></a>
         <p class="about-footer">Made for the Mihomo community.</p>
+      </section>
+    </div>
+
+    <div v-if="showEdit" class="modal-backdrop" @click.self="showEdit = false">
+      <section class="modal card">
+        <div class="section-heading"><div><span class="eyebrow">CONNECTION</span><h2>Edit controller</h2></div><button class="close" @click="showEdit = false">×</button></div>
+        <label for="edit-profile-name">Name (optional)</label><input id="edit-profile-name" v-model="name" placeholder="Home, VPS, Router…"/>
+        <label for="edit-connection-url">Dashboard / controller URL</label><input id="edit-connection-url" v-model="connectionUrl" autocapitalize="none" spellcheck="false"/>
+        <div class="modal-actions"><button class="secondary" @click="showEdit = false">Cancel</button><button @click="saveEdit" :disabled="!normalizeUrl(connectionUrl)">Save</button><button class="secondary" @click="removeProfile(editingId!); showEdit = false">Delete</button></div>
       </section>
     </div>
 
