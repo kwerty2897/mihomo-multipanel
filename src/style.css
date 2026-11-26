@@ -313,3 +313,6 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible),[role="button"]:foc
 
 /* Ensure Export settings button label stays white in dark mode. */
 :root[data-theme="dark"] .backup-button:not(.secondary-backup){color:#fff!important}
+
+/* White Save labels in Add Controller / Add Connection dialogs, dark theme only. */
+:root[data-theme="dark"] .modal-actions button:not(.secondary){color:#fff!important}
