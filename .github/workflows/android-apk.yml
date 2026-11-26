@@ -93,8 +93,8 @@ jobs:
           if not base:
               base=next((n for n in style_names if "Tauri" in n),None)
           if not base: raise SystemExit("Unable to identify generated Android app theme")
-          (root/"res"/"values").mkdir(parents=True,exist_ok=True)
-          (root/"res"/"values"/"multipanel_theme.xml").write_text(f'''<resources>
+          (root/"values").mkdir(parents=True,exist_ok=True)
+          (root/"values"/"multipanel_theme.xml").write_text(f'''<resources>
             <color name="multipanel_splash_light">#FAFAFA</color>
             <color name="multipanel_splash_dark">#101116</color>
             <style name="MultiPanelSplashLight" parent="{base}">
@@ -106,7 +106,7 @@ jobs:
               <item name="android:windowSplashScreenBackground">@color/multipanel_splash_dark</item>
             </style>
           </resources>''')
-          night=root/"res"/"values-night"
+          night=root/"values-night"
           night.mkdir(exist_ok=True)
           (night/"multipanel_theme.xml").write_text(f'''<resources>
             <style name="MultiPanelSplashSystem" parent="{base}">
@@ -114,7 +114,7 @@ jobs:
               <item name="android:windowSplashScreenBackground">@color/multipanel_splash_dark</item>
             </style>
           </resources>''')
-          day=root/"res"/"values"
+          day=root/"values"
           (day/"multipanel_system_theme.xml").write_text(f'''<resources>
             <style name="MultiPanelSplashSystem" parent="{base}">
               <item name="android:windowBackground">@color/multipanel_splash_light</item>
