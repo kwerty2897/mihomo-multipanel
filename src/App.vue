@@ -187,7 +187,7 @@ window.addEventListener('android-back', handleAndroidBack)
     </section>
     <template v-else>
     <section id="overview" class="hero">
-      <div class="hero-top"><h1>Good<br/><em>{{ greeting }}.</em></h1><button class="settings-button" aria-label="Settings" title="Settings" @click="showSettings = true">⚙</button></div>
+      <div class="hero-top"><h1>Good <em>{{ greeting }}.</em></h1><button class="settings-button" aria-label="Settings" title="Settings" @click="showSettings = true">⚙</button></div>
     </section>
     <section id="connections" class="connection card">
       <div class="section-heading"><div><span class="eyebrow">CONTROLLERS</span><h2>Your connections</h2></div><span class="pill">{{ profiles.length }} saved</span></div>
