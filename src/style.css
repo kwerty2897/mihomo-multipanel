@@ -28,3 +28,48 @@
   .remove-profile:active{background:#e7d5dc;color:#573044}
   footer{color:#817b8b}
 }
+
+/* Settings and About */
+.hero-top{display:flex;align-items:center;justify-content:space-between}
+.settings-button{width:40px;height:40px;border:1px solid #383642;border-radius:14px;background:#1a1921;color:#d8d0e8;font-size:21px;cursor:pointer}
+.settings-modal label{margin-top:8px}
+.settings-select{width:100%;padding:14px;border:1px solid #3b3845;border-radius:14px;background:#111117;color:#fff;font-size:14px;outline:none}
+.settings-divider{height:1px;background:#383541;margin:22px 0}
+.backup-title{font-size:14px;font-weight:700}
+.backup-button,.about-button{width:100%;padding:14px;border:0;border-radius:14px;background:#c4b3ff;color:#201536;font-weight:700;font-size:14px;cursor:pointer;margin-top:10px}
+.secondary-backup{background:#34313e;color:#eee9f8}
+.file-input{display:none}
+.import-message{font-size:12px;color:#bda7ff;margin:12px 0 0}
+.security-note{margin-top:18px}
+.about-button{margin-top:0;background:#34313e;color:#eee9f8}
+.about-backdrop{z-index:12}
+.about-brand{display:flex;align-items:center;gap:14px;margin:8px 0 18px}
+.about-logo{width:54px;height:54px;border-radius:18px;display:grid;place-items:center;background:#c4b3ff;color:#201536;font-size:24px;font-weight:800}
+.about-brand>div:last-child{display:flex;flex-direction:column;gap:5px}
+.about-brand strong{font-size:16px}
+.about-brand span,.about-footer{font-size:12px;color:#a6a2b1}
+.about-description{margin:0 0 18px}
+.about-link{display:flex;justify-content:space-between;align-items:center;padding:14px;border:1px solid #3b3845;border-radius:14px;color:#cbbaff;text-decoration:none;font-size:13px}
+.about-footer{margin:18px 0 0}
+@media(prefers-color-scheme:light){
+  .settings-button{border-color:#e2deea;background:#fff;color:#51465f}
+  .settings-select{border-color:#d9d4e1;background:#f8f7fa;color:#282432}
+  .settings-divider{background:#e5e0eb}
+  .secondary-backup,.about-button{background:#e9e5ef;color:#393343}
+  .import-message{color:#7056a5}
+  .about-logo{background:#eee8f8;color:#684d9f}
+  .about-brand span,.about-footer{color:#686373}
+  .about-link{border-color:#ddd7e7;color:#7056a5}
+}
+:root[data-theme="dark"]{color:#f3f1f8;background:#101116;color-scheme:dark}
+:root[data-theme="dark"] body{background:radial-gradient(ellipse at 80% 0%,#34245455,transparent 48%),#101116}
+:root[data-theme="light"]{color:#24212b;background:#f5f3f8;color-scheme:light}
+:root[data-theme="light"] body{background:radial-gradient(ellipse at 80% 0%,#d9cafa88,transparent 48%),#f5f3f8}
+:root[data-theme="light"] .card{border-color:#e2deea;background:#fff}
+:root[data-theme="light"] .panel-card{border-color:#e2deea;background:#fff;color:#282432}
+:root[data-theme="light"] .panel-card.selected{border-color:#9276c8;background:#f0ebf8}
+:root[data-theme="light"] .hero p,:root[data-theme="light"] .hint,:root[data-theme="light"] .preview p,:root[data-theme="light"] .panel-copy span{color:#686373}
+:root[data-theme="light"] .settings-button{border-color:#e2deea;background:#fff;color:#51465f}
+:root[data-theme="light"] .settings-select,:root[data-theme="light"] .modal input{border-color:#d9d4e1;background:#f8f7fa;color:#282432}
+:root[data-theme="light"] .settings-divider{background:#e5e0eb}
+:root[data-theme="light"] .about-link{border-color:#ddd7e7;color:#7056a5}
