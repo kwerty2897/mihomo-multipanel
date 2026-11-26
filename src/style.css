@@ -250,3 +250,31 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible),[role="button"]:foc
 :root{--app-surface:#1a1921;--app-card:#1a1921;--app-border:#33313c;--app-muted:#a6a2b1;--app-input:#111117;--app-accent:var(--monet-primary);--app-accent-container:var(--monet-container);--app-on-accent:var(--monet-on-primary)}
 :root[data-theme="light"]{--app-surface:#fff;--app-card:#fff;--app-border:#e2deea;--app-muted:#686373;--app-input:#f8f7fa;--app-accent:var(--monet-light-primary);--app-accent-container:var(--monet-light-container);--app-on-accent:#fff}
 :root[data-theme="dark"]{--app-surface:#1a1921;--app-card:#1a1921;--app-border:#33313c;--app-muted:#a6a2b1;--app-input:#111117;--app-accent:var(--monet-primary);--app-accent-container:var(--monet-container);--app-on-accent:var(--monet-on-primary)}
+
+
+/* Material You: make the light UI consistently use the Android accent roles. */
+:root[data-theme="light"][data-monet="on"]{
+  --monet-light-primary:var(--monet-primary);
+  --monet-light-container:var(--monet-primaryContainer);
+  --monet-light-on-primary:#fff;
+  --app-accent:var(--monet-primary);
+  --app-accent-container:var(--monet-primaryContainer);
+  --app-on-accent:#fff;
+}
+:root[data-theme="light"][data-monet="on"] .panel-card.selected,
+:root[data-theme="light"][data-monet="on"] .add-button,
+:root[data-theme="light"][data-monet="on"] .open-panel-button,
+:root[data-theme="light"][data-monet="on"] .modal-actions button:not(.secondary),
+:root[data-theme="light"][data-monet="on"] .backup-button:not(.secondary-backup){
+  background:var(--monet-primary);color:#fff;border-color:var(--monet-primary)
+}
+:root[data-theme="light"][data-monet="on"] .panel-card.selected{background:var(--monet-primaryContainer);color:#282432}
+:root[data-theme="light"][data-monet="on"] .panel-card.selected .panel-mark{background:var(--monet-primaryContainer);color:var(--monet-primary);border-color:var(--monet-primary)}
+:root[data-theme="light"][data-monet="on"] .settings-button,
+:root[data-theme="light"][data-monet="on"] .theme-picker-option[aria-selected="true"],
+:root[data-theme="light"][data-monet="on"] .panel-toolbar-button,
+:root[data-theme="light"][data-monet="on"] .theme-picker-option:active{background:var(--monet-primaryContainer);border-color:var(--monet-primary);color:var(--monet-primary)}
+:root[data-theme="light"][data-monet="on"] .theme-picker-check,
+:root[data-theme="light"][data-monet="on"] .theme-picker-chevron{color:var(--monet-primary)}
+:root[data-theme="light"][data-monet="on"] .switch.enabled{background:var(--monet-primary);border-color:var(--monet-primary)}
+:root[data-theme="light"][data-monet="on"] .about-logo{background:var(--monet-primaryContainer);border-color:var(--monet-primary);color:var(--monet-primary)}
