@@ -3,3 +3,28 @@
 
 
 .remove-profile{flex:none;width:30px;height:30px;border:0;border-radius:9px;background:#302b38;color:#bdb5c9;font-size:20px;line-height:1;cursor:pointer}.remove-profile:active{background:#543b48;color:#fff}
+
+/* Light appearance follows the Android system theme. */
+@media (prefers-color-scheme: light) {
+  :root{color:#24212b;background:#f5f3f8}
+  body{background:radial-gradient(ellipse at 80% 0%,#d9cafa88,transparent 48%),#f5f3f8}
+  .eyebrow{color:#7056a5}
+  .hero h1 em{color:#7555b7}
+  .hero p,.hint,.preview p,.panel-copy span{color:#686373}
+  .card{border-color:#e2deea;background:#fff}
+  .pill{border-color:#ddd7e7;color:#625c6e}
+  .panel-card{border-color:#e2deea;background:#fff;color:#282432}
+  .panel-card.selected{border-color:#9276c8;background:#f0ebf8}
+  .panel-mark{background:#eee8f8;color:#684d9f;border-color:#d8cde9}
+  .arrow{color:#777080}
+  .empty{color:#686373}
+  .add-button{border-color:#b9a9d4;background:#f1edf7;color:#60478e}
+  .modal-backdrop{background:#211b2c66}
+  .modal input{background:#f8f7fa;border-color:#d9d4e1;color:#282432}
+  .modal label,.connection label{color:#514b5d}
+  .modal-actions .secondary{background:#e9e5ef;color:#393343}
+  .close{color:#6f687a}
+  .remove-profile{background:#eeeaf2;color:#665e70}
+  .remove-profile:active{background:#e7d5dc;color:#573044}
+  footer{color:#817b8b}
+}
