@@ -65,7 +65,7 @@ jobs:
           done
 
           mkdir -p "$RES/drawable" "$RES/mipmap-anydpi-v26"
-          cat > "$RES/values/ic_launcher_colors.xml" <<'XML'
+          cat > "$RES/values/ic_launcher_background.xml" <<'XML'
           <resources>
             <color name="ic_launcher_background">#202124</color>
           </resources>
