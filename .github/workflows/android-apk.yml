@@ -50,6 +50,32 @@ jobs:
         run: |
           rm -rf src-tauri/gen/android
           npx tauri android init
+      - name: Match Android launch splash to app background
+        run: |
+          set -euo pipefail
+          RES=src-tauri/gen/android/app/src/main/res
+          mkdir -p "$RES/values"
+          cat > "$RES/values/multipanel_splash.xml" <<'XML'
+          <resources>
+            <color name="multipanel_splash_background">#101116</color>
+          </resources>
+          XML
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          root=Path("src-tauri/gen/android/app/src/main/res")
+          files=list((root/"values").glob("styles.xml"))+list((root/"values").glob("themes.xml"))
+          changed=False
+          for path in files:
+              s=path.read_text()
+              # Apply a matching background to application launch themes.
+              s=re.sub(r'(<style[^>]+(?:AppTheme|MainTheme)[^>]*>)(.*?)(</style>)',
+                lambda m: m.group(1)+m.group(2)+ ('<item name="android:windowBackground">@color/multipanel_splash_background</item>' if 'android:windowBackground' not in m.group(2) else '')+m.group(3),s,flags=re.S)
+              path.write_text(s)
+              changed=True
+          if not changed:
+              print("No style file found; theme splash adjustment skipped.")
+          PY
       - name: Configure Android system navigation bar
         run: |
           set -euo pipefail
