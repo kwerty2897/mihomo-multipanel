@@ -18,6 +18,8 @@ watch(theme, value => {
   try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ theme: value })) } catch { /* storage may be unavailable */ }
   if (value === 'system') document.documentElement.removeAttribute('data-theme')
   else document.documentElement.setAttribute('data-theme', value)
+  const systemBars = (window as Window & { AndroidSystemBars?: { setTheme: (theme: string) => void } }).AndroidSystemBars
+  systemBars?.setTheme(value)
 }, { immediate: true })
 function loadSavedProfiles(): Profile[] {
   try {
@@ -158,7 +160,7 @@ function removeProfile(id: number) {
     <div v-if="showAbout" class="modal-backdrop about-backdrop" @click.self="showAbout = false">
       <section class="modal card about-modal">
         <div class="section-heading"><div><span class="eyebrow">APPLICATION</span><h2>About</h2></div><button class="close" aria-label="Close about" @click="showAbout = false">×</button></div>
-        <div class="about-brand"><div class="about-logo">M</div><div><strong>Mihomo MultiPanel</strong><span>Version 0.1.0</span></div></div>
+        <div class="about-brand"><div class="about-logo" aria-label="Mihomo MultiPanel app icon"><svg viewBox="0 0 512 512" role="img" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"><path d="M256 76 405 161 405 344 256 430 107 344 107 161Z"/><path d="M107 161 256 247 405 161 M256 247 256 430"/><path d="M256 103 256 221 M145 322 235 270 M277 270 367 322"/></g></svg></div><div><strong>Mihomo MultiPanel</strong><span>Version 0.1.0</span></div></div>
         <p class="hint about-description">A simple hub for managing Mihomo controllers and web dashboards.</p>
         <a class="about-link" href="https://github.com/kwerty2897/mihomo-multipanel" target="_blank" rel="noreferrer">GitHub project <span>↗</span></a>
         <p class="about-footer">Made for the Mihomo community.</p>
