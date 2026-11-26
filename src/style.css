@@ -384,3 +384,11 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden;margin:0}
 .settings-modal input,.settings-modal textarea{width:100%;max-width:100%;min-width:0;display:block;box-sizing:border-box}
 .settings-modal textarea{resize:vertical;overflow-wrap:anywhere;word-break:break-word}
 @media(max-width:480px){.template-row{grid-template-columns:minmax(0,1fr) auto;row-gap:8px}.template-row button:last-child{grid-column:2}.template-row button:first-of-type{grid-column:2}.template-row .animation-setting-copy{grid-column:1 / -1}.settings-modal{padding:16px}}
+
+
+/* Compact native-looking template selection and template management buttons */
+.app-select,.settings-modal select{width:100%;max-width:100%;appearance:auto;padding:14px 15px;border:1px solid var(--mp-outline);border-radius:14px;background:var(--mp-input);color:var(--mp-text);font:inherit;font-size:14px;outline:none;margin-bottom:8px;}
+.app-select:focus,.settings-modal select:focus{border-color:var(--mp-accent);}
+.template-row button.secondary{border:1px solid var(--mp-outline);border-radius:12px;background:var(--mp-neutral);color:var(--mp-neutral-on);font-size:12px;font-weight:650;cursor:pointer;}
+:root[data-theme="light"] .template-row button.secondary{background:var(--mp-neutral);color:var(--mp-neutral-on);border-color:var(--mp-outline);}
+:root[data-theme="dark"] .template-row button.secondary{background:var(--mp-neutral);color:var(--mp-neutral-on);border-color:var(--mp-outline);}
