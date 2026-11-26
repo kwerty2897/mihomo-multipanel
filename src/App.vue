@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 
-type Profile = { id: number; name: string; controller: string; panelUrl: string; panelTemplateId?: string; host?: string; port?: string; secret?: string; mihomoUrl?: string }\ntype PanelTemplate = { id: string; name: string; url: string }\nconst DEFAULT_TEMPLATES: PanelTemplate[] = [{ id: 'yacd', name: 'YACD', url: 'https://yacd.metacubex.one/?hostname=%host&port=%port&secret=%secret' }, { id: 'zash', name: 'Zash', url: 'https://board.zash.run.place/#/setup?http=true&hostname=%host&port=%port&secret=%secret' }, { id: 'metacubexd', name: 'MetaCubeXD', url: 'https://metacubex.github.io/metacubexd/#/setup?http=true&hostname=%host&port=%port&secret=%secret' }]
+type Profile = { id: number; name: string; controller: string; panelUrl: string; panelTemplateId?: string; host?: string; port?: string; secret?: string; mihomoUrl?: string }
+type PanelTemplate = { id: string; name: string; url: string }
+const DEFAULT_TEMPLATES: PanelTemplate[] = [{ id: 'yacd', name: 'YACD', url: 'https://yacd.metacubex.one/?hostname=%host&port=%port&secret=%secret' }, { id: 'zash', name: 'Zash', url: 'https://board.zash.run.place/#/setup?http=true&hostname=%host&port=%port&secret=%secret' }, { id: 'metacubexd', name: 'MetaCubeXD', url: 'https://metacubex.github.io/metacubexd/#/setup?http=true&hostname=%host&port=%port&secret=%secret' }]
 const STORAGE_KEY = 'mihomo-multipanel-profiles-v1'
 const SETTINGS_KEY = 'mihomo-multipanel-settings-v1'
 type Theme = 'system' | 'light' | 'dark'
@@ -10,8 +12,13 @@ const savedSettings = (() => {
 })()
 const theme = ref<Theme>(['system', 'light', 'dark'].includes(savedSettings.theme) ? savedSettings.theme : 'system')
 const animationsEnabled = ref(savedSettings.animations !== false)
-const hidePanelToolbar = ref(savedSettings.hidePanelToolbar === true)\nconst panelTemplates = ref<PanelTemplate[]>(Array.isArray(savedSettings.panelTemplates) && savedSettings.panelTemplates.length ? savedSettings.panelTemplates : DEFAULT_TEMPLATES)\nconst selectedTemplateId = ref('yacd')\nconst templateName = ref('')\nconst templateUrl = ref('')\nconst editingTemplateId = ref('')
-watch(hidePanelToolbar, value => { try { const current = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...current, hidePanelToolbar: value, panelTemplates: panelTemplates.value })) } catch { /* storage may be unavailable */ } })
+const hidePanelToolbar = ref(savedSettings.hidePanelToolbar === true)
+const panelTemplates = ref<PanelTemplate[]>(Array.isArray(savedSettings.panelTemplates) && savedSettings.panelTemplates.length ? savedSettings.panelTemplates : DEFAULT_TEMPLATES)
+const selectedTemplateId = ref('yacd')
+const templateName = ref('')
+const templateUrl = ref('')
+const editingTemplateId = ref('')
+watch([hidePanelToolbar, panelTemplates], ([value, templates]) => { try { const current = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...current, hidePanelToolbar: value, panelTemplates: templates })) } catch { /* storage may be unavailable */ } }, { deep: true })
 const panelOpen = ref(false)
 const panelLoading = ref(false)
 const controllerStatus = ref<'idle' | 'checking' | 'online' | 'offline'>('idle')
@@ -102,8 +109,9 @@ function saveEdit() {
   editingId.value = null
 }
 function addProfile() {
-  const p = normalizeUrl(connectionUrl.value)
-  const c = deriveController(connectionUrl.value)
+  const selected = panelTemplates.value.find(t => t.id === selectedTemplateId.value)
+  const p = normalizeUrl(renderTemplate(selected?.url || ''))
+  const c = controllerFromFields()
   if (!c || !p) return
   const parsed = (() => { try { return new URL(c) } catch { return null } })(); const item: Profile = { id: Date.now(), name: name.value.trim() || c, controller: normalizeUrl(mihomoUrl.value) || c, panelUrl: p, panelTemplateId: selected?.id, host: host.value.trim() || parsed?.hostname || '', port: port.value.trim() || parsed?.port || '9090', secret: secret.value, mihomoUrl: normalizeUrl(mihomoUrl.value) || '' }
   profiles.value.push(item); activeId.value = item.id
@@ -142,7 +150,8 @@ async function importSettings(event: Event) {
     const importedTheme = backup.settings?.theme
     theme.value = ['system', 'light', 'dark'].includes(String(importedTheme)) ? importedTheme as Theme : 'system'
     animationsEnabled.value = backup.settings?.animations !== false
-    hidePanelToolbar.value = backup.settings?.hidePanelToolbar === true\n    panelTemplates.value = Array.isArray(backup.settings?.panelTemplates) && backup.settings!.panelTemplates!.length ? backup.settings!.panelTemplates as PanelTemplate[] : DEFAULT_TEMPLATES
+    hidePanelToolbar.value = backup.settings?.hidePanelToolbar === true
+    panelTemplates.value = Array.isArray(backup.settings?.panelTemplates) && backup.settings!.panelTemplates!.length ? backup.settings!.panelTemplates as PanelTemplate[] : DEFAULT_TEMPLATES
     importMessage.value = 'Backup imported successfully.'
   } catch (error) { importMessage.value = error instanceof Error ? error.message : 'Could not import backup.' }
   finally { input.value = '' }
@@ -185,7 +194,10 @@ function reloadPanel() {
   const frame = document.querySelector<HTMLIFrameElement>('.panel-frame')
   if (frame) frame.src = current.value.panelUrl
 }
-function saveTemplate() { const n = templateName.value.trim(); const u = templateUrl.value.trim(); if (!n || !u) return; if (editingTemplateId.value) { const i = panelTemplates.value.findIndex(t => t.id === editingTemplateId.value); if (i >= 0) panelTemplates.value[i] = { id: editingTemplateId.value, name: n, url: u }; } else panelTemplates.value.push({ id: 'custom-' + Date.now(), name: n, url: u }); templateName.value = ''; templateUrl.value = ''; editingTemplateId.value = '' }\nfunction editTemplate(t: PanelTemplate) { editingTemplateId.value = t.id; templateName.value = t.name; templateUrl.value = t.url }\nfunction deleteTemplate(id: string) { if (DEFAULT_TEMPLATES.some(t => t.id === id)) { const def = DEFAULT_TEMPLATES.find(t => t.id === id)!; panelTemplates.value = panelTemplates.value.map(t => t.id === id ? { ...def, url: '' } : t); } else panelTemplates.value = panelTemplates.value.filter(t => t.id !== id); }\nfunction removeProfile(id: number) {
+function saveTemplate() { const n = templateName.value.trim(); const u = templateUrl.value.trim(); if (!n || !u) return; if (editingTemplateId.value) { const i = panelTemplates.value.findIndex(t => t.id === editingTemplateId.value); if (i >= 0) panelTemplates.value[i] = { id: editingTemplateId.value, name: n, url: u }; } else panelTemplates.value.push({ id: 'custom-' + Date.now(), name: n, url: u }); templateName.value = ''; templateUrl.value = ''; editingTemplateId.value = '' }
+function editTemplate(t: PanelTemplate) { editingTemplateId.value = t.id; templateName.value = t.name; templateUrl.value = t.url }
+function deleteTemplate(id: string) { panelTemplates.value = panelTemplates.value.filter(t => t.id !== id); if (selectedTemplateId.value === id) selectedTemplateId.value = panelTemplates.value[0]?.id || '' }
+function removeProfile(id: number) {
   profiles.value = profiles.value.filter(p => p.id !== id)
   if (activeId.value === id) activeId.value = profiles.value[0]?.id ?? null
 }
