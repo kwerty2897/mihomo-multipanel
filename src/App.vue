@@ -90,8 +90,9 @@ const port = ref('9090')
 const secret = ref('')
 const mihomoUrl = ref('')
 const manualPanelUrl = ref('')
+const editTemplatePickerOpen = ref(false)
 let longPressTimer: number | null = null
-function startLongPress(profile: Profile) { cancelLongPress(); longPressTimer = window.setTimeout(() => { editingId.value = profile.id; name.value = profile.name; host.value = profile.host || (() => { try { return new URL(profile.controller).hostname } catch { return '' } })(); port.value = profile.port || (() => { try { return new URL(profile.controller).port || '9090' } catch { return '9090' } })(); secret.value = profile.secret || ''; mihomoUrl.value = profile.mihomoUrl || ''; showEdit.value = true }, 550) }
+function startLongPress(profile: Profile) { cancelLongPress(); longPressTimer = window.setTimeout(() => { editingId.value = profile.id; name.value = profile.name; host.value = profile.host || (() => { try { return new URL(profile.controller).hostname } catch { return '' } })(); port.value = profile.port || (() => { try { return new URL(profile.controller).port || '9090' } catch { return '9090' } })(); secret.value = profile.secret || ''; mihomoUrl.value = profile.mihomoUrl || ''; selectedTemplateId.value = profile.panelTemplateId || ''; manualPanelUrl.value = profile.panelTemplateId ? '' : profile.panelUrl; revealSecret.value = false; showEdit.value = true }, 550) }
 function cancelLongPress() { if (longPressTimer !== null) window.clearTimeout(longPressTimer); longPressTimer = null }
 function scrollInputIntoView(event: FocusEvent) { window.setTimeout(() => (event.target as HTMLElement)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 250) }
 function renderTemplate(template: string) { return template.replace(/%host/g, encodeURIComponent(host.value.trim())).replace(/%port/g, encodeURIComponent(port.value.trim())).replace(/%secret/g, encodeURIComponent(secret.value)) }
@@ -105,11 +106,13 @@ function normalizeUrl(value: string) {
 }
 function saveEdit() {
   const controller = controllerFromFields()
-  if (!controller || editingId.value === null) return
+  const selected = panelTemplates.value.find(t => t.id === selectedTemplateId.value)
+  const panel = normalizeUrl(selected ? renderTemplate(selected.url) : manualPanelUrl.value)
+  if (!controller || !panel || editingId.value === null) return
   
   const index = profiles.value.findIndex(p => p.id === editingId.value)
   if (index < 0) return
-  profiles.value[index] = { ...profiles.value[index], name: name.value.trim() || controller, controller: normalizeUrl(mihomoUrl.value) || controller, host: host.value.trim(), port: port.value.trim(), secret: secret.value, mihomoUrl: normalizeUrl(mihomoUrl.value) || '' }
+  profiles.value[index] = { ...profiles.value[index], name: name.value.trim() || controller, controller: normalizeUrl(mihomoUrl.value) || controller, panelUrl: panel, panelTemplateId: selected?.id || '', host: host.value.trim(), port: port.value.trim(), secret: secret.value, mihomoUrl: normalizeUrl(mihomoUrl.value) || '' }
   showEdit.value = false
   editingId.value = null
 }
@@ -307,8 +310,9 @@ window.addEventListener('android-back', handleAndroidBack)
       <section class="modal card">
         <div class="section-heading"><div><span class="eyebrow">CONNECTION</span><h2>Edit controller</h2></div><button class="close" @click="showEdit = false">×</button></div>
         <label for="edit-profile-name">Name (optional)</label><input id="edit-profile-name" v-model="name" placeholder="Home, VPS, Router…"/>
-        <label for="edit-host">Host / IP</label><input id="edit-host" v-model="host" placeholder="192.168.1.1" autocapitalize="none" spellcheck="false" @focus="scrollInputIntoView"/><label for="edit-port">Port</label><input id="edit-port" v-model="port" inputmode="numeric" placeholder="9090" @focus="scrollInputIntoView"/><label for="edit-secret">Secret (optional)</label><div class="secret-input-wrap"><input id="edit-secret" v-model="secret" :type="revealSecret ? 'text' : 'password'" autocapitalize="none" spellcheck="false" @focus="scrollInputIntoView"/><button type="button" class="secret-toggle" @click="revealSecret = !revealSecret">{{ revealSecret ? 'Hide' : 'Show' }}</button></div><label for="edit-mihomo-url">Mihomo URL (optional)</label><input id="edit-mihomo-url" v-model="mihomoUrl" placeholder="http://192.168.1.1:9090" autocapitalize="none" spellcheck="false" @focus="scrollInputIntoView"/><p class="hint">Use this if Mihomo is managed through another dashboard or its API is exposed at a different address.</p>
-        <div class="modal-actions"><button class="secondary" @click="showEdit = false">Cancel</button><button @click="saveEdit" :disabled="!controllerFromFields()">Save</button><button class="secondary" @click="removeProfile(editingId!); showEdit = false">Delete</button></div>
+        <label>Dashboard template</label><div class="template-picker"><button type="button" class="template-picker-trigger" :aria-expanded="editTemplatePickerOpen" @click="editTemplatePickerOpen = !editTemplatePickerOpen"><span>{{ panelTemplates.find(t => t.id === selectedTemplateId)?.name || 'Not selected' }}</span><span class="picker-chevron">⌄</span></button><div v-if="editTemplatePickerOpen" class="template-picker-menu"><button type="button" class="template-picker-option" @click="selectedTemplateId = ''; editTemplatePickerOpen = false">Not selected</button><button v-for="t in panelTemplates" :key="t.id" type="button" class="template-picker-option" @click="selectedTemplateId = t.id; editTemplatePickerOpen = false">{{ t.name }}</button></div></div>
+        <template v-if="selectedTemplateId"><label for="edit-host">Host / IP</label><input id="edit-host" v-model="host" placeholder="192.168.1.1" autocapitalize="none" spellcheck="false" @focus="scrollInputIntoView"/><label for="edit-port">Port</label><input id="edit-port" v-model="port" inputmode="numeric" placeholder="9090" @focus="scrollInputIntoView"/><label for="edit-secret">Secret (optional)</label><div class="secret-input-wrap"><input id="edit-secret" v-model="secret" :type="revealSecret ? 'text' : 'password'" autocapitalize="none" spellcheck="false" @focus="scrollInputIntoView"/><button type="button" class="secret-toggle" @click="revealSecret = !revealSecret">{{ revealSecret ? 'Hide' : 'Show' }}</button></div><label for="edit-mihomo-url">Mihomo URL (optional)</label><input id="edit-mihomo-url" v-model="mihomoUrl" placeholder="http://192.168.1.1:9090" autocapitalize="none" spellcheck="false" @focus="scrollInputIntoView"/><p class="hint">Use this if Mihomo is managed through another dashboard or its API is exposed at a different address.</p></template><template v-else><label for="edit-manual-panel-url">Dashboard URL</label><input id="edit-manual-panel-url" v-model="manualPanelUrl" placeholder="https://dashboard.example" autocapitalize="none" spellcheck="false" @focus="scrollInputIntoView"/><p class="hint">Configure the connection manually inside the dashboard.</p></template>
+        <div class="modal-actions"><button class="secondary" @click="showEdit = false">Cancel</button><button @click="saveEdit" :disabled="!controllerFromFields() || (selectedTemplateId ? false : !normalizeUrl(manualPanelUrl))">Save</button><button class="secondary" @click="removeProfile(editingId!); showEdit = false">Delete</button></div>
       </section>
     </div>
 
