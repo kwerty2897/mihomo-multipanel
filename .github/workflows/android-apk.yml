@@ -66,13 +66,37 @@ jobs:
           replacement = """class MainActivity : TauriActivity() {
               override fun onCreate(savedInstanceState: android.os.Bundle?) {
                   super.onCreate(savedInstanceState)
+                  updateSystemBars()
+              }
+
+              override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+                  super.onConfigurationChanged(newConfig)
+                  updateSystemBars()
+              }
+
+              @Suppress("DEPRECATION")
+              private fun updateSystemBars() {
+                  val darkTheme = (resources.configuration.uiMode and
+                      android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
+                      android.content.res.Configuration.UI_MODE_NIGHT_YES
+                  window.statusBarColor = if (darkTheme) {
+                      android.graphics.Color.WHITE
+                  } else {
+                      android.graphics.Color.rgb(16, 17, 22)
+                  }
                   window.navigationBarColor = android.graphics.Color.rgb(16, 17, 22)
                   if (android.os.Build.VERSION.SDK_INT >= 29) {
                       window.isNavigationBarContrastEnforced = false
+                      window.isStatusBarContrastEnforced = false
                   }
-                  window.decorView.systemUiVisibility =
-                      window.decorView.systemUiVisibility and
-                      android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
+                  var flags = window.decorView.systemUiVisibility
+                  flags = flags and android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
+                  flags = if (darkTheme) {
+                      flags or android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                  } else {
+                      flags and android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+                  }
+                  window.decorView.systemUiVisibility = flags
               }
           }"""
           updated, count = re.subn(pattern, replacement, source, count=1)
