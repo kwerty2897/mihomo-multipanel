@@ -82,7 +82,8 @@ const secret = ref('')
 let longPressTimer: number | null = null
 function startLongPress(profile: Profile) { cancelLongPress(); longPressTimer = window.setTimeout(() => { editingId.value = profile.id; name.value = profile.name; host.value = profile.host || (() => { try { return new URL(profile.controller).hostname } catch { return '' } })(); port.value = profile.port || (() => { try { return new URL(profile.controller).port || '9090' } catch { return '9090' } })(); secret.value = profile.secret || ''; showEdit.value = true }, 550) }
 function cancelLongPress() { if (longPressTimer !== null) window.clearTimeout(longPressTimer); longPressTimer = null }
-function controllerFromFields() { const h = host.value.trim().replace(/^https?:\/\//, '').replace(/\/$/, ''); const pt = port.value.trim(); if (!h || !/^\d{1,5}$/.test(pt) || Number(pt) < 1 || Number(pt) > 65535) return ''; return normalizeUrl('http://' + h + ':' + pt) }\nfunction deriveController(value: string) { const normalized = normalizeUrl(value); if (!normalized) return ''; try { return new URL(normalized).origin } catch { return '' } }
+function controllerFromFields() { const h = host.value.trim().replace(/^https?:\/\//, '').replace(/\/$/, ''); const pt = port.value.trim(); if (!h || !/^\d{1,5}$/.test(pt) || Number(pt) < 1 || Number(pt) > 65535) return ''; return normalizeUrl('http://' + h + ':' + pt) }
+function deriveController(value: string) { const normalized = normalizeUrl(value); if (!normalized) return ''; try { return new URL(normalized).origin } catch { return '' } }
 const current = computed(() => profiles.value.find(p => p.id === activeId.value) ?? null)
 function normalizeUrl(value: string) {
   const v = value.trim()
