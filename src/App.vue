@@ -1,19 +1,28 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 type Profile = { id: number; name: string; controller: string; panelUrl: string }
-const profiles = ref<Profile[]>([])
-const activeId = ref<number | null>(null)
+const STORAGE_KEY = 'mihomo-multipanel-profiles-v1'
+function loadSavedProfiles(): Profile[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return []
+    const parsed: unknown = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed.filter((item): item is Profile =>
+      item && typeof item.id === 'number' && typeof item.name === 'string' &&
+      typeof item.controller === 'string' && typeof item.panelUrl === 'string'
+    ) : []
+  } catch { return [] }
+}
+const profiles = ref<Profile[]>(loadSavedProfiles())
+const activeId = ref<number | null>(profiles.value[0]?.id ?? null)
+watch(profiles, value => {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(value)) } catch { /* storage may be unavailable */ }
+}, { deep: true })
 const showAdd = ref(false)
 const name = ref('')
 const controller = ref('')
 const panelUrl = ref('')
-const activeTab = ref('overview')
-function navigate(tab: string, target: string) {
-  activeTab.value = tab
-  if (target === 'add') { showAdd.value = true; return }
-  document.getElementById(target)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-}
 const current = computed(() => profiles.value.find(p => p.id === activeId.value) ?? null)
 function normalizeUrl(value: string) {
   const v = value.trim()
@@ -49,7 +58,7 @@ function removeProfile(id: number) {
       <div class="section-heading"><div><span class="eyebrow">CONTROLLERS</span><h2>Your connections</h2></div><span class="pill">{{ profiles.length }} saved</span></div>
       <div v-if="profiles.length" class="panel-list">
         <button v-for="profile in profiles" :key="profile.id" class="panel-card" :class="{selected: activeId === profile.id}" @click="activeId = profile.id">
-          <div class="panel-mark">M</div><div class="panel-copy"><strong>{{ profile.name }}</strong><span>{{ profile.controller }}</span><span class="hint">{{ profile.panelUrl }}</span></div><div class="arrow">↗</div>
+          <div class="panel-mark">M</div><div class="panel-copy"><strong>{{ profile.name }}</strong><span>{{ profile.controller }}</span><span class="hint">{{ profile.panelUrl }}</span></div><button class="remove-profile" aria-label="Remove connection" @click.stop="removeProfile(profile.id)">×</button><div class="arrow">›</div>
         </button>
       </div>
       <div v-else class="empty">No saved connections yet. Add your Mihomo controller and dashboard URL.</div>
@@ -60,11 +69,7 @@ function removeProfile(id: number) {
       <div class="preview card"><div class="preview-head"><span class="eyebrow">PANEL URL</span><span class="pill">Custom</span></div><h3>MetaCubeXD</h3><p>{{ current.panelUrl }}</p><p class="hint">Panel loading and API integration are not implemented yet.</p></div>
     </section>
     <footer>MIHOMO MULTIPANEL <span>•</span> EARLY PROTOTYPE</footer>
-    <nav class="bottom-nav" aria-label="Main navigation">
-      <button :class="{ active: activeTab === 'overview' }" @click="navigate('overview', 'overview')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span>Обзор</span></button>
-      <button :class="{ active: activeTab === 'connections' }" @click="navigate('connections', 'connections')"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/><path d="M7 7h.01M7 17h.01M11 7h6M11 17h6"/></svg><span>Панели</span></button>
-      <button @click="navigate('add', 'add')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Добавить</span></button>
-    </nav>
+
     <div v-if="showAdd" class="modal-backdrop" @click.self="showAdd = false">
       <section class="modal card">
         <div class="section-heading"><div><span class="eyebrow">NEW CONNECTION</span><h2>Add controller</h2></div><button class="close" @click="showAdd = false">×</button></div>
