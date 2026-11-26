@@ -307,36 +307,47 @@ jobs:
             <color name="ic_launcher_background">#6750A4</color>
           </resources>
           XML
+          # Transparent adaptive icon: black cube with a white (or Monet) outline.
           cat > "$RES/drawable/ic_launcher_foreground.xml" <<'XML'
           <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="512" android:viewportHeight="512">
-            <group android:translateX="72" android:translateY="72" android:scaleX="0.72" android:scaleY="0.72">
-              <path android:fillColor="#00000000" android:strokeColor="#D0BCFF" android:strokeWidth="12" android:strokeLineJoin="round" android:pathData="M256,66 L421,157 L421,354 L256,446 L91,354 L91,157 Z"/>
-              <path android:fillColor="#00000000" android:strokeColor="#FFFFFF" android:strokeWidth="12" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M91,157 L256,250 L421,157 M256,250 L256,446 M256,94 L256,218 M123,336 L234,272 M278,272 L389,336"/>
-            </group>
+            <path android:fillColor="#000000" android:pathData="M256,76 L405,161 L405,344 L256,430 L107,344 L107,161 Z"/>
+            <path android:fillColor="#00000000" android:strokeColor="#FFFFFF" android:strokeWidth="18" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M107,161 L256,247 L405,161 M256,247 L256,430"/>
           </vector>
           XML
-          # Android API 24+ prefers drawable-v24 over drawable; replace Tauri's generated foreground too.
-          mkdir -p "$RES/drawable-v24"
+          mkdir -p "$RES/drawable-v24" "$RES/drawable-v31" "$RES/mipmap-anydpi-v26" "$RES/mipmap-anydpi-v31"
           cp "$RES/drawable/ic_launcher_foreground.xml" "$RES/drawable-v24/ic_launcher_foreground.xml"
-          test "$(sha256sum "$RES/drawable/ic_launcher_foreground.xml" | cut -d' ' -f1)" = "$(sha256sum "$RES/drawable-v24/ic_launcher_foreground.xml" | cut -d' ' -f1)"
 
+          # Android 12+: outline uses the device's Monet accent; the cube remains black.
+          cat > "$RES/drawable-v31/ic_launcher_foreground.xml" <<'XML'
+          <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="512" android:viewportHeight="512">
+            <path android:fillColor="#000000" android:pathData="M256,76 L405,161 L405,344 L256,430 L107,344 L107,161 Z"/>
+            <path android:fillColor="#00000000" android:strokeColor="@android:color/system_accent1_600" android:strokeWidth="18" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M107,161 L256,247 L405,161 M256,247 L256,430"/>
+          </vector>
+          XML
           cat > "$RES/drawable/ic_launcher_monochrome.xml" <<'XML'
           <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="512" android:viewportHeight="512">
-            <path android:fillColor="#000000" android:pathData="M256,66 L421,157 L421,354 L256,446 L91,354 L91,157 Z"/>
-            <path android:fillColor="#00000000" android:strokeColor="#000000" android:strokeWidth="22" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M91,157 L256,250 L421,157 M256,250 L256,446 M256,94 L256,218 M123,336 L234,272 M278,272 L389,336"/>
+            <path android:fillColor="#000000" android:pathData="M256,76 L405,161 L405,344 L256,430 L107,344 L107,161 Z"/>
+            <path android:fillColor="#00000000" android:strokeColor="#000000" android:strokeWidth="18" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M107,161 L256,247 L405,161 M256,247 L256,430"/>
           </vector>
           XML
           for name in ic_launcher ic_launcher_round; do
             cat > "$RES/mipmap-anydpi-v26/$name.xml" <<'XML'
           <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-            <background android:drawable="@color/ic_launcher_background"/>
+            <background android:drawable="@android:color/transparent"/>
+            <foreground android:drawable="@drawable/ic_launcher_foreground"/>
+            <monochrome android:drawable="@drawable/ic_launcher_monochrome"/>
+          </adaptive-icon>
+          XML
+            cat > "$RES/mipmap-anydpi-v31/$name.xml" <<'XML'
+          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+            <background android:drawable="@android:color/transparent"/>
             <foreground android:drawable="@drawable/ic_launcher_foreground"/>
             <monochrome android:drawable="@drawable/ic_launcher_monochrome"/>
           </adaptive-icon>
           XML
           done
 
-          # Force both launcher entries to our resources (some Android launchers prefer roundIcon).
+          # Force both launcher entries to our adaptive resources.
           if grep -q 'android:icon=' "$MANIFEST"; then
             sed -i 's#android:icon="[^"]*"#android:icon="@mipmap/ic_launcher"#' "$MANIFEST"
           else
@@ -347,9 +358,6 @@ jobs:
           else
             sed -i 's#<application#<application android:roundIcon="@mipmap/ic_launcher_round"#' "$MANIFEST"
           fi
-
-          echo "Launcher manifest configuration:"
-          grep -o 'android:\(roundIcon\|icon\)="[^"]*"' "$MANIFEST"
           grep -q 'android:icon="@mipmap/ic_launcher"' "$MANIFEST"
           grep -q 'android:roundIcon="@mipmap/ic_launcher_round"' "$MANIFEST"
 
