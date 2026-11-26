@@ -25,7 +25,7 @@ const themeLabels: Record<Theme, string> = { system: 'Use system theme', light: 
 const importInput = ref<HTMLInputElement | null>(null)
 const importMessage = ref('')
 watch([theme, animationsEnabled], ([themeValue, animationsValue]) => {
-  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ theme: themeValue, animations: animationsValue })) } catch { /* storage may be unavailable */ }
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ theme: themeValue, animations: animationsValue, hidePanelToolbar: hidePanelToolbar.value })) } catch { /* storage may be unavailable */ }
   const root = document.documentElement
   root.setAttribute('data-theme', themeValue === 'system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : themeValue)
   root.setAttribute('data-animations', animationsValue ? 'on' : 'off')
@@ -102,7 +102,7 @@ async function importSettings(event: Event) {
     if (!data || typeof data !== 'object') throw new Error('Invalid backup file.')
     const outer = data as { app?: unknown; version?: unknown; profiles?: unknown; settings?: { theme?: unknown; animations?: unknown; hidePanelToolbar?: unknown }; secret?: unknown }
     if (outer.app !== 'mihomo-multipanel') throw new Error('Unsupported backup format.')
-    let backup: { profiles?: unknown; settings?: { theme?: unknown; animations?: unknown } }
+    let backup: { profiles?: unknown; settings?: { theme?: unknown; animations?: unknown; hidePanelToolbar?: unknown } }
     if (outer.version === 1) backup = outer
     else if (outer.version === 2 && typeof outer.secret === 'string') {
       backup = JSON.parse(decodeURIComponent(escape(atob(outer.secret))))
