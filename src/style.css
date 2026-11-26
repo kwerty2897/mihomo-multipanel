@@ -237,3 +237,6 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible),[role="button"]:foc
 :root[data-theme="light"] .controller-status p{color:#686373}
 :root[data-theme="dark"] .status-refresh{background:#282532;border-color:#383541;color:#eee9f8}
 :root[data-theme="dark"] .controller-status p{color:#a6a2b1}
+
+/* Compact centered hero, prototype footer */
+.hero{padding-top:12px;text-align:center}.hero-top{justify-content:center;position:relative}.hero-top h1{margin:0;font-size:clamp(34px,7vw,54px)}.hero-top .settings-button{position:absolute;right:0;top:0}.hero p{display:none}footer{text-align:center}
