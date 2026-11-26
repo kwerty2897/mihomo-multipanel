@@ -90,6 +90,16 @@ function normalizeUrl(value: string) {
   if (!v) return ''
   try { const u = new URL(v.includes('://') ? v : 'http://' + v); if (!['http:', 'https:'].includes(u.protocol)) return ''; return u.toString().replace(/\/$/, '') } catch { return '' }
 }
+function saveEdit() {
+  const controller = controllerFromFields()
+  if (!controller || editingId.value === null) return
+  const panel = 'https://metacubex.github.io/metacubexd/#/setup?http=true&hostname=' + encodeURIComponent(host.value.trim()) + '&port=' + encodeURIComponent(port.value.trim()) + '&secret=' + encodeURIComponent(secret.value)
+  const index = profiles.value.findIndex(p => p.id === editingId.value)
+  if (index < 0) return
+  profiles.value[index] = { ...profiles.value[index], name: name.value.trim() || controller, controller, panelUrl: panel, host: host.value.trim(), port: port.value.trim(), secret: secret.value }
+  showEdit.value = false
+  editingId.value = null
+}
 function addProfile() {
   const p = normalizeUrl(connectionUrl.value)
   const c = deriveController(connectionUrl.value)
