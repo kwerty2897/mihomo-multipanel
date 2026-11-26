@@ -45,10 +45,7 @@ function removeProfile(id: number) {
 
 <template>
   <main class="shell">
-    <header class="topbar">
-      <div class="brand"><div class="logo">M</div><div><strong>Mihomo</strong><span>MultiPanel</span></div></div>
-      <div class="status"><i></i> CONTROLLERS</div>
-    </header>
+
     <section id="overview" class="hero">
       <div class="eyebrow">YOUR CONNECTION HUB</div>
       <h1>One place for<br/><em>every dashboard.</em></h1>
