@@ -33,6 +33,20 @@ jobs:
           targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
       - name: Install npm dependencies
         run: npm install
+      - name: Generate app icon
+        run: |
+          python -m pip install Pillow
+          mkdir -p src-tauri/icons
+          python - <<'PY'
+          from PIL import Image, ImageDraw
+          im = Image.new('RGBA', (512, 512), (20, 35, 55, 255))
+          d = ImageDraw.Draw(im)
+          d.rounded_rectangle((92, 92, 420, 420), radius=80, outline=(70, 190, 255, 255), width=22)
+          d.line([(150, 335), (255, 180), (355, 285)], fill=(245, 250, 255, 255), width=34)
+          for x, y in [(150, 335), (255, 180), (355, 285)]:
+              d.ellipse((x-32, y-32, x+32, y+32), fill=(255, 255, 255, 255), outline=(70, 190, 255, 255), width=10)
+          im.save('src-tauri/icons/icon.png')
+          PY
       - name: Initialize Android project
         run: npx tauri android init
       - name: Build APK
