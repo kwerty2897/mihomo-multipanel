@@ -45,15 +45,18 @@ jobs:
           cache-all: true
       - name: Install npm dependencies
         run: npm install
-      - name: Generate app icons from SVG
-        run: npx tauri icon src-tauri/icons/icon.svg
       - name: Initialize Android project
         run: |
           rm -rf src-tauri/gen/android
           npx tauri android init
+      - name: Generate app icons from SVG
+        run: npx tauri icon src-tauri/icons/icon.svg
       - name: Configure Android adaptive and themed icons
         run: |
           RES=src-tauri/gen/android/app/src/main/res
+          echo "Generated launcher icon resources:"
+          find "$RES" -maxdepth 2 -type f \( -name 'ic_launcher*' -o -name '*launcher*' \) -print
+          test -n "$(find "$RES" -type f -name 'ic_launcher.png' -o -name 'ic_launcher.webp' | head -n1)" || { echo "::error::Tauri did not generate Android launcher raster icons"; exit 1; }
           mkdir -p "$RES/drawable" "$RES/mipmap-anydpi-v26"
           cat > "$RES/drawable/ic_launcher_foreground.xml" <<'XML'
           <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="512" android:viewportHeight="512">
