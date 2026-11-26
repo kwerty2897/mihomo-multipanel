@@ -8,6 +8,8 @@ type Theme = 'system' | 'light' | 'dark'
 const theme = ref<Theme>((() => {
   try { const value = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}').theme; return ['system', 'light', 'dark'].includes(value) ? value : 'system' } catch { return 'system' }
 })())
+const panelOpen = ref(false)
+const panelLoading = ref(false)
 const showSettings = ref(false)
 const showAbout = ref(false)
 const importInput = ref<HTMLInputElement | null>(null)
@@ -79,6 +81,18 @@ async function importSettings(event: Event) {
   } catch (error) { importMessage.value = error instanceof Error ? error.message : 'Could not import backup.' }
   finally { input.value = '' }
 }
+function openPanel() {
+  if (!current.value) return
+  panelLoading.value = true
+  panelOpen.value = true
+}
+function closePanel() { panelOpen.value = false; panelLoading.value = false }
+function reloadPanel() {
+  if (!current.value) return
+  panelLoading.value = true
+  const frame = document.querySelector<HTMLIFrameElement>('.panel-frame')
+  if (frame) frame.src = current.value.panelUrl
+}
 function removeProfile(id: number) {
   profiles.value = profiles.value.filter(p => p.id !== id)
   if (activeId.value === id) activeId.value = profiles.value[0]?.id ?? null
@@ -87,7 +101,16 @@ function removeProfile(id: number) {
 
 <template>
   <main class="shell">
-
+    <section v-if="panelOpen && current" class="panel-viewer">
+      <header class="panel-toolbar">
+        <button class="panel-toolbar-button" aria-label="Back to connections" @click="closePanel">‹</button>
+        <div class="panel-toolbar-title"><strong>{{ current.name }}</strong><span>{{ current.panelUrl }}</span></div>
+        <button class="panel-toolbar-button" aria-label="Reload panel" @click="reloadPanel">↻</button>
+      </header>
+      <div v-if="panelLoading" class="panel-loading">Loading dashboard…</div>
+      <iframe :key="current.id" class="panel-frame" :src="current.panelUrl" :title="current.name + ' dashboard'" allow="clipboard-read; clipboard-write; fullscreen" allowfullscreen @load="panelLoading = false"></iframe>
+    </section>
+    <template v-else>
     <section id="overview" class="hero">
       <div class="hero-top"><div class="eyebrow">YOUR CONNECTION HUB</div><button class="settings-button" aria-label="Settings" title="Settings" @click="showSettings = true">⚙</button></div>
       <h1>One place for<br/><em>every dashboard.</em></h1>
@@ -105,9 +128,10 @@ function removeProfile(id: number) {
     </section>
     <section v-if="current" id="dashboard" class="panels">
       <div class="section-heading"><div><span class="eyebrow">DASHBOARD</span><h2>{{ current.name }}</h2></div></div>
-      <div class="preview card"><div class="preview-head"><span class="eyebrow">PANEL URL</span><span class="pill">Custom</span></div><h3>MetaCubeXD</h3><p>{{ current.panelUrl }}</p><p class="hint">Panel loading and API integration are not implemented yet.</p></div>
+      <div class="preview card"><div class="preview-head"><span class="eyebrow">PANEL URL</span><span class="pill">Ready</span></div><h3>Dashboard</h3><p>{{ current.panelUrl }}</p><button class="open-panel-button" @click="openPanel">Open dashboard <span>↗</span></button><p class="hint">The dashboard opens inside the app. Its own update mechanism remains unchanged.</p></div>
     </section>
     <footer>MIHOMO MULTIPANEL <span>•</span> EARLY PROTOTYPE</footer>
+    </template>
 
     <div v-if="showSettings" class="modal-backdrop" @click.self="showSettings = false">
       <section class="modal card settings-modal">
