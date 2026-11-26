@@ -307,6 +307,7 @@ jobs:
           # Copy repository-maintained Android icon resource presets.
           cp android-templates/res/values/ic_launcher_background.xml "$RES/values/"
           cp android-templates/res/drawable/ic_launcher_foreground.xml "$RES/drawable/"
+          cp android-templates/res/drawable/ic_launcher_transparent_background.xml "$RES/drawable/"
           cp android-templates/res/drawable/ic_launcher_monochrome.xml "$RES/drawable/"
           cp android-templates/res/drawable/ic_launcher_foreground.xml "$RES/drawable-v24/"
           cp android-templates/res/mipmap-anydpi-v26/ic_launcher.xml "$RES/mipmap-anydpi-v26/"
