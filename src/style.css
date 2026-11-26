@@ -114,3 +114,19 @@ input,textarea,select,[contenteditable="true"]{-webkit-user-select:text;user-sel
 :root[data-theme="dark"] .panel-toolbar-button{background:#282532;border-color:#383541;color:#eee9f8}
 :root[data-theme="dark"] .panel-toolbar-title span{color:#a6a2b1}
 :root[data-theme="dark"] .panel-loading{background:#282532;color:#d8d0e8}
+
+
+/* App icon in About */
+.about-logo{flex:none;background:#292638;border:1px solid #494158;color:#dadedf}
+.about-logo svg{display:block;width:46px;height:46px}
+@media(prefers-color-scheme:light){
+  .about-logo{background:#f1edf7;border-color:#d8cde9;color:#594879}
+}
+:root[data-theme="light"] .about-logo{background:#f1edf7;border-color:#d8cde9;color:#594879}
+:root[data-theme="dark"] .about-logo{background:#292638;border-color:#494158;color:#dadedf}
+
+/* Safe areas for transparent Android system bars */
+.shell{padding-top:calc(28px + env(safe-area-inset-top));padding-bottom:calc(36px + env(safe-area-inset-bottom))}
+.panel-toolbar{height:calc(58px + env(safe-area-inset-top));min-height:calc(58px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top)}
+.panel-frame{height:calc(100% - 58px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}
+.panel-loading{top:calc(58px + env(safe-area-inset-top))}
