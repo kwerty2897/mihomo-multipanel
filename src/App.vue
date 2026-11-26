@@ -257,6 +257,11 @@ window.addEventListener('android-back', handleAndroidBack)
           <button class="switch" type="button" role="switch" :aria-checked="hidePanelToolbar" :class="{ enabled: hidePanelToolbar }" @click="hidePanelToolbar = !hidePanelToolbar"><span></span></button>
         </div>
         <div class="settings-divider"></div>
+        <div class="backup-title">Dashboard templates</div>
+        <p class="hint">Templates use %host, %port and %secret placeholders. Choose a template when adding a connection.</p>
+        <div v-for="t in panelTemplates" :key="t.id" class="animation-setting template-row"><div class="animation-setting-copy"><strong>{{ t.name }}</strong><span>{{ t.url }}</span></div><button class="secondary" @click="editTemplate(t)">Edit</button><button class="secondary" @click="deleteTemplate(t.id)">Remove</button></div>
+        <label for="template-name">Template name</label><input id="template-name" v-model="templateName" placeholder="My dashboard"/><label for="template-url">Template URL</label><textarea id="template-url" v-model="templateUrl" rows="3" placeholder="https://example.com/?hostname=%host&port=%port&secret=%secret"></textarea><div class="modal-actions"><button class="secondary" @click="editingTemplateId='';templateName='';templateUrl=''">Clear</button><button @click="saveTemplate" :disabled="!templateName.trim() || !templateUrl.trim()">{{ editingTemplateId ? 'Update template' : 'Add template' }}</button></div>
+        <div class="settings-divider"></div>
         <div class="backup-title">Backup & restore</div>
         <p class="hint">Export or restore all saved controller connections, panel URLs and appearance settings in one JSON file.</p>
         <button class="backup-button" @click="exportSettings">Export settings</button>
@@ -293,9 +298,10 @@ window.addEventListener('android-back', handleAndroidBack)
       <section class="modal card">
         <div class="section-heading"><div><span class="eyebrow">NEW CONNECTION</span><h2>Add controller</h2></div><button class="close" @click="showAdd = false">×</button></div>
         <label for="profile-name">Name (optional)</label><input id="profile-name" v-model="name" placeholder="Home, VPS, Router…"/>
-        <label for="connection-url">Dashboard / controller URL</label><input id="connection-url" :value="connectionUrl" @input="connectionUrl = ($event.target as HTMLInputElement).value" placeholder="http://192.168.1.1:9090/ui/metacubexd" autocapitalize="none" spellcheck="false"/>
-        <label for="add-mihomo-url">Mihomo URL (optional)</label><input id="add-mihomo-url" v-model="mihomoUrl" placeholder="http://192.168.1.1:9090" autocapitalize="none" spellcheck="false"/><p class="hint">Optional direct Mihomo API address, used for connection status checks when the dashboard is hosted elsewhere.</p><p class="hint">Enter the dashboard URL. The controller address is detected automatically from its origin.</p>
-        <div class="modal-actions"><button class="secondary" @click="showAdd = false">Cancel</button><button @click="addProfile" :disabled="!deriveController(connectionUrl)">Save</button></div>
+        <label for="add-host">Host / IP</label><input id="add-host" v-model="host" placeholder="192.168.1.1" autocapitalize="none" spellcheck="false"/><label for="add-port">Port</label><input id="add-port" v-model="port" inputmode="numeric" placeholder="9090"/><label for="add-secret">Secret (optional)</label><input id="add-secret" v-model="secret" type="password" autocapitalize="none" spellcheck="false"/>
+        <label for="panel-template-choice">Dashboard template</label><select id="panel-template-choice" v-model="selectedTemplateId"><option v-for="t in panelTemplates" :key="t.id" :value="t.id">{{ t.name }}</option></select><p class="hint">Template fields are filled automatically. You can customize templates in Settings.</p>
+        <label for="add-mihomo-url">Mihomo URL (optional)</label><input id="add-mihomo-url" v-model="mihomoUrl" placeholder="http://192.168.1.1:9090" autocapitalize="none" spellcheck="false"/><p class="hint">Optional direct API address, used for availability checks if the dashboard is hosted elsewhere.</p>
+        <div class="modal-actions"><button class="secondary" @click="showAdd = false">Cancel</button><button @click="addProfile" :disabled="!controllerFromFields()">Save</button></div>
       </section>
     </div>
   </main>
