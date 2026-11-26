@@ -119,6 +119,17 @@ jobs:
           sed -i '/^android\.proguard\.failOnMissingFiles=/d' "$GRADLE_PROPS"
       - name: Build optimized release APK via Tauri
         run: npx tauri android build --apk --split-per-abi
+      - name: Verify launcher icon in built APKs
+        run: |
+          set -euo pipefail
+          AAPT="$ANDROID_HOME/build-tools/35.0.0/aapt"
+          shopt -s globstar nullglob
+          apks=(src-tauri/gen/android/app/build/outputs/apk/**/*.apk)
+          for apk in "${apks[@]}"; do
+            [[ "$apk" == *-unsigned.apk ]] || continue
+            echo "Checking launcher metadata: $apk"
+            "$AAPT" dump badging "$apk" | grep -E "^(application:|application-icon)"
+          done
       - name: Sign APKs (persistent key or temporary fallback)
         env:
           SIGNING_KEY_BASE64: ${{ secrets.ANDROID_SIGNING_KEY_BASE64 }}
@@ -131,7 +142,11 @@ jobs:
             echo "$SIGNING_KEY_BASE64" | base64 -d > "$KEYSTORE"
             # Confirm the configured alias is actually a private-key entry; auto-select one if needed.
             listing="$(keytool -list -v -keystore "$KEYSTORE" -storepass "$SIGNING_KEY_PASSWORD")"
-            if [ -n "$SIGNING_KEY_ALIAS" ] && echo "$listing" | grep -A3 -F "Alias name: $SIGNING_KEY_ALIAS" | grep -q "PrivateKeyEntry"; then
+            alias_info=""
+            if [ -n "$SIGNING_KEY_ALIAS" ]; then
+              alias_info="$(keytool -list -v -keystore "$KEYSTORE" -storepass "$SIGNING_KEY_PASSWORD" -alias "$SIGNING_KEY_ALIAS" 2>/dev/null || true)"
+            fi
+            if [ -n "$SIGNING_KEY_ALIAS" ] && grep -q "Entry type: PrivateKeyEntry" <<< "$alias_info"; then
               alias="$SIGNING_KEY_ALIAS"
             else
               alias="$(printf '%s\n' "$listing" | awk '/Alias name:/{a=$3}/Entry type: PrivateKeyEntry/{print a;exit}')"
@@ -139,7 +154,7 @@ jobs:
                 echo "::error::Keystore contains no PrivateKeyEntry. Check the uploaded keystore and password."
                 exit 1
               fi
-              echo "::warning::Secret alias did not match a private-key entry; selected alias from keystore."
+              echo "::warning::Configured alias is not a PrivateKeyEntry; selected a private-key alias from the keystore."
             fi
             echo "Using persistent signing keystore and alias: $alias"
           else
