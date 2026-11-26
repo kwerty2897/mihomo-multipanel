@@ -39,12 +39,25 @@ jobs:
           mkdir -p src-tauri/icons
           python - <<'PY'
           from PIL import Image, ImageDraw
-          im = Image.new('RGBA', (512, 512), (20, 35, 55, 255))
-          d = ImageDraw.Draw(im)
-          d.rounded_rectangle((92, 92, 420, 420), radius=80, outline=(70, 190, 255, 255), width=22)
-          d.line([(150, 335), (255, 180), (355, 285)], fill=(245, 250, 255, 255), width=34)
-          for x, y in [(150, 335), (255, 180), (355, 285)]:
-              d.ellipse((x-32, y-32, x+32, y+32), fill=(255, 255, 255, 255), outline=(70, 190, 255, 255), width=10)
+          import math
+          S=512
+          im=Image.new('RGBA',(S,S)); px=im.load()
+          for y in range(S):
+            for x in range(S):
+              t=(x+y)/(2*S); px[x,y]=(int(12+45*t),int(15+18*t),int(70+105*t),255)
+          d=ImageDraw.Draw(im)
+          d.rounded_rectangle((26,26,486,486),radius=118,outline=(93,80,245,100),width=5)
+          # Cat head silhouette
+          d.polygon([(130,270),(135,155),(185,100),(230,150),(285,150),(340,100),(390,155),(395,270),(365,330),(160,330)],fill=(39,36,130,255),outline=(165,115,255,255))
+          d.rounded_rectangle((177,185,205,238),radius=13,fill=(250,250,255,255)); d.rounded_rectangle((307,185,335,238),radius=13,fill=(250,250,255,255))
+          # dashboard frame
+          d.rounded_rectangle((65,275,447,440),radius=40,fill=(24,23,75,235),outline=(130,95,255,255),width=8)
+          for i,c in enumerate([(255,70,90),(255,195,60),(40,220,175)]): d.ellipse((95+i*42,295,119+i*42,319),fill=c)
+          # network nodes and connecting lines
+          d.line([(145,378),(195,345),(230,388)],fill=(235,235,255),width=12)
+          for x,y in [(145,378),(195,345),(230,388)]: d.ellipse((x-15,y-15,x+15,y+15),fill=(245,245,255))
+          d.rounded_rectangle((260,345,330,363),radius=9,fill=(150,125,245)); d.rounded_rectangle((260,380,330,398),radius=9,fill=(150,125,245))
+          d.rounded_rectangle((355,338,410,365),radius=14,fill=(30,215,165)); d.rounded_rectangle((355,375,410,402),radius=14,fill=(110,90,180))
           im.save('src-tauri/icons/icon.png')
           PY
       - name: Initialize Android project
