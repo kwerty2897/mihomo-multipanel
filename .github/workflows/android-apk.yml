@@ -311,8 +311,9 @@ jobs:
           cp android-templates/res/drawable/ic_launcher_transparent_background.xml "$RES/drawable/"
           cp android-templates/res/drawable/ic_launcher_monochrome.xml "$RES/drawable/"
           cp android-templates/res/drawable/ic_launcher_foreground.xml "$RES/drawable-v24/"
-          cp android-templates/res/mipmap-anydpi-v26/ic_launcher.xml "$RES/mipmap-anydpi-v26/"
-          cp android-templates/res/mipmap-anydpi-v26/ic_launcher_round.xml "$RES/mipmap-anydpi-v26/"
+          # Android/Samsung launchers can render transparent adaptive-icon background layers as black.
+          # Remove adaptive XML overrides and use the generated transparent density PNGs instead.
+          rm -f "$RES/mipmap-anydpi-v26/ic_launcher.xml" "$RES/mipmap-anydpi-v26/ic_launcher_round.xml"
 
           if grep -q 'android:icon=' "$MANIFEST"; then
             sed -i 's#android:icon="[^"]*"#android:icon="@mipmap/ic_launcher"#' "$MANIFEST"
