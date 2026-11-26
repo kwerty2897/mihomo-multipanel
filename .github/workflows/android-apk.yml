@@ -78,6 +78,11 @@ jobs:
             </group>
           </vector>
           XML
+          # Android API 24+ prefers drawable-v24 over drawable; replace Tauri's generated foreground too.
+          mkdir -p "$RES/drawable-v24"
+          cp "$RES/drawable/ic_launcher_foreground.xml" "$RES/drawable-v24/ic_launcher_foreground.xml"
+          test "$(sha256sum "$RES/drawable/ic_launcher_foreground.xml" | cut -d' ' -f1)" = "$(sha256sum "$RES/drawable-v24/ic_launcher_foreground.xml" | cut -d' ' -f1)"
+
           cat > "$RES/drawable/ic_launcher_monochrome.xml" <<'XML'
           <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="512" android:viewportHeight="512">
             <path android:fillColor="#000000" android:pathData="M256,66 L421,157 L421,354 L256,446 L91,354 L91,157 Z"/>
@@ -161,7 +166,7 @@ jobs:
                 echo "::error::Keystore contains no PrivateKeyEntry. Check the uploaded keystore and password."
                 exit 1
               fi
-              echo "::notice::Configured alias was not a PrivateKeyEntry; automatically selected the private-key alias: $alias"
+              echo "Configured alias is not a private-key entry; using detected private-key alias: $alias"
             fi
             echo "Using persistent signing keystore and alias: $alias"
           else
