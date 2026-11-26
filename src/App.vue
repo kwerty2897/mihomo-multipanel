@@ -160,6 +160,14 @@ function removeProfile(id: number) {
   profiles.value = profiles.value.filter(p => p.id !== id)
   if (activeId.value === id) activeId.value = profiles.value[0]?.id ?? null
 }
+
+function handleAndroidBack() {
+  if (showAbout.value) { showAbout.value = false; return }
+  if (showSettings.value) { themeMenuOpen.value = false; showSettings.value = false; return }
+  if (showAdd.value) { showAdd.value = false; return }
+  if (panelOpen.value) { closePanel(); return }
+}
+window.addEventListener('android-back', handleAndroidBack)
 </script>
 
 <template>
