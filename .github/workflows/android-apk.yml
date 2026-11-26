@@ -166,7 +166,6 @@ jobs:
                 echo "::error::Keystore contains no PrivateKeyEntry. Check the uploaded keystore and password."
                 exit 1
               fi
-              echo "Configured alias is not a private-key entry; using detected private-key alias: $alias"
             fi
             echo "Using persistent signing keystore and alias: $alias"
           else
