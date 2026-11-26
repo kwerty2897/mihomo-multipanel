@@ -30,6 +30,19 @@ watch([theme, animationsEnabled], ([themeValue, animationsValue]) => {
   const systemBars = (window as Window & { AndroidSystemBars?: { setTheme: (theme: string) => void } }).AndroidSystemBars
   systemBars?.setTheme(themeValue)
 }, { immediate: true })
+function applyAndroidPalette() {
+  try {
+    const bridge = (window as Window & { AndroidSystemBars?: { getPalette?: () => string } }).AndroidSystemBars
+    const raw = bridge?.getPalette?.()
+    if (!raw) return
+    const palette = JSON.parse(raw) as Record<string, string>
+    for (const [key, value] of Object.entries(palette)) {
+      if (/^#[0-9A-Fa-f]{6,8}$/.test(value)) document.documentElement.style.setProperty('--monet-' + key, value)
+    }
+    document.documentElement.setAttribute('data-monet', 'on')
+  } catch { /* unavailable on older Android versions */ }
+}
+applyAndroidPalette()
 const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
 systemThemeQuery.addEventListener('change', () => {
   if (theme.value === 'system') document.documentElement.setAttribute('data-theme', systemThemeQuery.matches ? 'dark' : 'light')
