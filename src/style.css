@@ -75,8 +75,11 @@
 :root[data-theme="light"] .about-link{border-color:#ddd7e7;color:#7056a5}
 
 /* Prevent accidental text selection in the app UI; keep form controls editable. */
-html,body,.shell,.shell *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+/* Avoid suppressing native long-press text selection/callout, which can trigger Android haptics. */
+html,body,.shell,.shell *{-webkit-touch-callout:default}
+button,a,[role="button"],.panel-card,.add-button,.remove-profile,.switch,.theme-picker-option{-webkit-user-select:none;user-select:none}
 input,textarea,select,[contenteditable="true"]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+
 
 :root[data-theme="dark"] .card,:root[data-theme="dark"] .panel-card{border-color:#33313c;background:#1a1921;color:#f3f1f8}
 :root[data-theme="dark"] .panel-card.selected{border-color:#a78bfa;background:#282333}
