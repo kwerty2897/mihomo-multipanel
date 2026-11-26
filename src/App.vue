@@ -182,7 +182,7 @@ window.addEventListener('android-back', handleAndroidBack)
         <div class="panel-toolbar-title"><strong>{{ current.name }}</strong><span>{{ current.panelUrl }}</span></div>
         <button class="panel-toolbar-button" aria-label="Reload panel" @click="reloadPanel">↻</button>
       </header>
-      <div v-if="panelLoading" class="panel-loading">Loading dashboard…</div>
+      <div v-if="panelLoading" class="panel-loading" :class="{ toolbarHidden: hidePanelToolbar }">Loading dashboard…</div>
       <iframe :key="current.id" class="panel-frame" :src="current.panelUrl" :title="current.name + ' dashboard'" allow="clipboard-read; clipboard-write; fullscreen" allowfullscreen @load="panelLoading = false"></iframe>
     </section>
     <template v-else>
