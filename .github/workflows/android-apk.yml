@@ -19,11 +19,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          cache: pip
+      - uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('package.json') }}
+          restore-keys: npm-${{ runner.os }}-
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ hashFiles('package.json') }}
+          restore-keys: pip-${{ runner.os }}-
       - uses: gradle/actions/setup-gradle@v4
         with:
           cache-disabled: false
