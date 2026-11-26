@@ -20,6 +20,11 @@ const controllerCheckedAt = ref('')
 let statusRequest: AbortController | null = null
 const showSettings = ref(false)
 const showAbout = ref(false)
+watch(showSettings, value => {
+  document.body.style.overflow = value ? 'hidden' : ''
+  document.body.style.touchAction = value ? 'none' : ''
+})
+
 const themeMenuOpen = ref(false)
 const themeLabels: Record<Theme, string> = { system: 'Use system theme', light: 'Light', dark: 'Dark' }
 const greeting = computed(() => { const hour = new Date().getHours(); return hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening' })
