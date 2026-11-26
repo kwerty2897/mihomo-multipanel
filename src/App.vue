@@ -23,10 +23,6 @@ const editingTemplateId = ref('')
 watch([hidePanelToolbar, panelTemplates], ([value, templates]) => { try { const current = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...current, hidePanelToolbar: value, panelTemplates: templates })) } catch { /* storage may be unavailable */ } }, { deep: true })
 const panelOpen = ref(false)
 const panelLoading = ref(false)
-const controllerStatus = ref<'idle' | 'checking' | 'online' | 'offline'>('idle')
-const controllerStatusMessage = ref('')
-const controllerCheckedAt = ref('')
-let statusRequest: AbortController | null = null
 const showSettings = ref(false)
 const showAbout = ref(false)
 watch(showSettings, value => {
@@ -164,33 +160,7 @@ async function importSettings(event: Event) {
   } catch (error) { importMessage.value = error instanceof Error ? error.message : 'Could not import backup.' }
   finally { input.value = '' }
 }
-async function checkController() {
-  if (!current.value) { controllerStatus.value = 'idle'; return }
-  statusRequest?.abort()
-  const request = new AbortController()
-  statusRequest = request
-  const timeout = window.setTimeout(() => request.abort(), 8000)
-  controllerStatus.value = 'checking'
-  controllerStatusMessage.value = ''
-  try {
-    const endpoint = current.value.controller.replace(/\/$/, '') + '/version'
-    const headers: Record<string, string> = {}; if (current.value.secret) headers.Authorization = 'Bearer ' + current.value.secret
-    const response = await fetch(endpoint, { signal: request.signal, cache: 'no-store', headers })
-    if (!response.ok) throw new Error('HTTP ' + response.status)
-    const data = await response.json()
-    controllerStatus.value = 'online'
-    controllerStatusMessage.value = typeof data.version === 'string' ? 'Mihomo ' + data.version : 'Controller responds'
-    controllerCheckedAt.value = new Date().toLocaleTimeString()
-  } catch (error) {
-    if (request.signal.aborted && statusRequest !== request) return
-    controllerStatus.value = 'offline'
-    controllerStatusMessage.value = error instanceof Error && error.name === 'TypeError'
-      ? 'Could not reach Controller (network or CORS)'
-      : 'Controller did not respond'
-    controllerCheckedAt.value = new Date().toLocaleTimeString()
-  } finally { window.clearTimeout(timeout) }
-}
-watch(activeId, () => { if (current.value) checkController() }, { immediate: true })
+
 function openPanel() {
   if (!current.value) return
   panelLoading.value = true
@@ -240,7 +210,7 @@ window.addEventListener('android-back', handleAndroidBack)
       <div class="section-heading"><div><span class="eyebrow">CONTROLLERS</span><h2>Your connections</h2></div><span class="pill">{{ profiles.length }} saved</span></div>
       <div v-if="profiles.length" class="panel-list">
         <div v-for="profile in profiles" :key="profile.id" class="panel-card" :class="{selected: activeId === profile.id}" role="button" tabindex="0" @click="activeId = profile.id" @keydown.enter="activeId = profile.id" @pointerdown="startLongPress(profile)" @pointerup="cancelLongPress" @pointerleave="cancelLongPress" @pointercancel="cancelLongPress" @contextmenu.prevent="startLongPress(profile)">
-          <div class="panel-copy"><strong>{{ profile.name }}</strong><span>{{ profile.controller }}</span></div><button class="status-indicator controller-card-indicator" :class="activeId === profile.id ? controllerStatus : 'idle'" type="button" aria-label="Refresh controller availability" @click.stop="activeId = profile.id; checkController()"></button><div class="arrow">›</div>
+          <div class="panel-copy"><strong>{{ profile.name }}</strong><span>{{ profile.controller }}</span></div><div class="arrow">›</div>
         </div>
       </div>
       <div v-else class="empty">No saved connections yet. Add your Mihomo controller and dashboard URL.</div>
