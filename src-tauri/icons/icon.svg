@@ -1,8 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Transparent canvas; filled black cube with complete rear edges and white outline -->
-  <path fill="#000" d="M256 64 432 160 432 352 256 448 80 352 80 160Z"/>
-  <g fill="none" stroke="#fff" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M80 160 256 256 432 160 M256 256V448 M80 160 256 64 432 160 432 352 256 448 80 352Z"/>
-    <path d="M256 64V224 M80 352 224 272 M288 272 432 352"/>
-  </g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="#000" d="M256 64 432 160 432 352 256 448 80 352 80 160Z"/><g fill="none" stroke="#fff" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"><path d="M256 64 432 160 432 352 256 448 80 352 80 160Z M80 160 256 256 432 160 M256 256V448"/></g></svg>
