@@ -15,23 +15,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: ~/.npm
           key: npm-${{ runner.os }}-${{ hashFiles('package.json') }}
           restore-keys: npm-${{ runner.os }}-
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
         with:
           cache-disabled: false
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
         with:
           packages: platform-tools
       - name: Install Android SDK components
@@ -51,12 +51,19 @@ jobs:
           npx tauri android init
       - name: Generate app icons from SVG
         run: npx tauri icon src-tauri/icons/icon.svg
-      - name: Configure Android adaptive and themed icons
+      - name: Configure and verify Android launcher icons
         run: |
+          set -euo pipefail
           RES=src-tauri/gen/android/app/src/main/res
-          echo "Generated launcher icon resources:"
-          find "$RES" -maxdepth 2 -type f \( -name 'ic_launcher*' -o -name '*launcher*' \) -print
-          test -n "$(find "$RES" -type f -name 'ic_launcher.png' -o -name 'ic_launcher.webp' | head -n1)" || { echo "::error::Tauri did not generate Android launcher raster icons"; exit 1; }
+          MANIFEST=src-tauri/gen/android/app/src/main/AndroidManifest.xml
+
+          echo "Generated launcher resources:"
+          find "$RES" -type f -name 'ic_launcher*' -print
+          for density in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
+            test -s "$RES/mipmap-$density/ic_launcher.png"
+            test -s "$RES/mipmap-$density/ic_launcher_round.png"
+          done
+
           mkdir -p "$RES/drawable" "$RES/mipmap-anydpi-v26"
           cat > "$RES/drawable/ic_launcher_foreground.xml" <<'XML'
           <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="512" android:viewportHeight="512">
@@ -70,13 +77,42 @@ jobs:
             <path android:fillColor="#00000000" android:strokeColor="#000000" android:strokeWidth="22" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M91,157 L256,250 L421,157 M256,250 L256,446 M256,94 L256,218 M123,336 L234,272 M278,272 L389,336"/>
           </vector>
           XML
-          cat > "$RES/mipmap-anydpi-v26/ic_launcher.xml" <<'XML'
+          for name in ic_launcher ic_launcher_round; do
+            cat > "$RES/mipmap-anydpi-v26/$name.xml" <<'XML'
           <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
             <background android:drawable="@android:color/transparent"/>
             <foreground android:drawable="@drawable/ic_launcher_foreground"/>
             <monochrome android:drawable="@drawable/ic_launcher_monochrome"/>
           </adaptive-icon>
           XML
+          done
+
+          # Force both launcher entries to our resources (some Android launchers prefer roundIcon).
+          if grep -q 'android:icon=' "$MANIFEST"; then
+            sed -i 's#android:icon="[^"]*"#android:icon="@mipmap/ic_launcher"#' "$MANIFEST"
+          else
+            sed -i 's#<application#<application android:icon="@mipmap/ic_launcher"#' "$MANIFEST"
+          fi
+          if grep -q 'android:roundIcon=' "$MANIFEST"; then
+            sed -i 's#android:roundIcon="[^"]*"#android:roundIcon="@mipmap/ic_launcher_round"#' "$MANIFEST"
+          else
+            sed -i 's#<application#<application android:roundIcon="@mipmap/ic_launcher_round"#' "$MANIFEST"
+          fi
+
+          echo "Launcher manifest configuration:"
+          grep -o 'android:\(roundIcon\|icon\)="[^"]*"' "$MANIFEST"
+          grep -q 'android:icon="@mipmap/ic_launcher"' "$MANIFEST"
+          grep -q 'android:roundIcon="@mipmap/ic_launcher_round"' "$MANIFEST"
+
+          # Remove obsolete AGP compatibility switches from the generated project.
+          GRADLE_PROPS=src-tauri/gen/android/gradle.properties
+          if [ -f "$GRADLE_PROPS" ]; then
+            sed -i -E '/^(android\.proguard\.failOnMissingFiles|android\.builtInKotlin|android\.newDsl)=/d' "$GRADLE_PROPS"
+          fi
+          if grep -Eq '^(android\.proguard\.failOnMissingFiles|android\.builtInKotlin|android\.newDsl)=' "$GRADLE_PROPS" 2>/dev/null; then
+            echo "::error::Deprecated Android Gradle properties remain"
+            exit 1
+          fi
       - name: Build optimized release APK via Tauri
         run: npx tauri android build --apk --split-per-abi
       - name: Sign APKs (persistent key or temporary fallback)
@@ -119,7 +155,7 @@ jobs:
             mv "$apk" "${apk%-unsigned.apk}.apk"
           done
           rm -f "$KEYSTORE"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: mihomo-multipanel-apk
           path: src-tauri/gen/android/app/build/outputs/apk/**/*.apk
