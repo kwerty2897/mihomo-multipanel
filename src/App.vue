@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 
-type Profile = { id: number; name: string; controller: string; panelUrl: string }
+type Profile = { id: number; name: string; controller: string; panelUrl: string; host?: string; port?: string; secret?: string }
 const STORAGE_KEY = 'mihomo-multipanel-profiles-v1'
 const SETTINGS_KEY = 'mihomo-multipanel-settings-v1'
 type Theme = 'system' | 'light' | 'dark'
@@ -76,10 +76,13 @@ const showEdit = ref(false)
 const editingId = ref<number | null>(null)
 const name = ref('')
 const connectionUrl = ref('')
+const host = ref('')
+const port = ref('9090')
+const secret = ref('')
 let longPressTimer: number | null = null
-function startLongPress(profile: Profile) { cancelLongPress(); longPressTimer = window.setTimeout(() => { editingId.value = profile.id; name.value = profile.name; connectionUrl.value = profile.panelUrl; showEdit.value = true }, 550) }
+function startLongPress(profile: Profile) { cancelLongPress(); longPressTimer = window.setTimeout(() => { editingId.value = profile.id; name.value = profile.name; host.value = profile.host || (() => { try { return new URL(profile.controller).hostname } catch { return '' } })(); port.value = profile.port || (() => { try { return new URL(profile.controller).port || '9090' } catch { return '9090' } })(); secret.value = profile.secret || ''; showEdit.value = true }, 550) }
 function cancelLongPress() { if (longPressTimer !== null) window.clearTimeout(longPressTimer); longPressTimer = null }
-function saveEdit() { const p = normalizeUrl(connectionUrl.value); const c = deriveController(connectionUrl.value); if (!p || !c || editingId.value === null) return; const index = profiles.value.findIndex(x => x.id === editingId.value); if (index >= 0) profiles.value[index] = { ...profiles.value[index], name: name.value.trim() || c, controller: c, panelUrl: p }; showEdit.value = false; editingId.value = null; name.value = ''; connectionUrl.value = '' }
+function controllerFromFields() { const h = host.value.trim().replace(/^https?:\\/\\//, '').replace(/\\/$/, ''); const pt = port.value.trim(); if (!h || !/^\\d{1,5}$/.test(pt) || Number(pt) < 1 || Number(pt) > 65535) return ''; return normalizeUrl((h.includes(':') && !h.startsWith('[') ? 'http://' + h : 'http://' + h) + ':' + pt) }\nfunction saveEdit() { const c = controllerFromFields(); if (!c || editingId.value === null) return; const panel = c + '/ui/metacubexd' + (secret.value.trim() ? '?hostname=' + encodeURIComponent(new URL(c).hostname) + '&port=' + encodeURIComponent(port.value.trim()) + '&secret=' + encodeURIComponent(secret.value.trim()) : ''); const index = profiles.value.findIndex(x => x.id === editingId.value); if (index >= 0) profiles.value[index] = { ...profiles.value[index], name: name.value.trim() || c, controller: c, panelUrl: panel, host: host.value.trim(), port: port.value.trim(), secret: secret.value.trim() }; showEdit.value = false; editingId.value = null; name.value = ''; host.value = ''; port.value = '9090'; secret.value = '' }
 function deriveController(value: string) { const normalized = normalizeUrl(value); if (!normalized) return ''; try { return new URL(normalized).origin } catch { return '' } }
 const current = computed(() => profiles.value.find(p => p.id === activeId.value) ?? null)
 function normalizeUrl(value: string) {
@@ -93,7 +96,7 @@ function addProfile() {
   if (!c || !p) return
   const item: Profile = { id: Date.now(), name: name.value.trim() || c, controller: c, panelUrl: p }
   profiles.value.push(item); activeId.value = item.id
-  name.value = ''; connectionUrl.value = ''; showAdd.value = false
+  name.value = ''; host.value = ''; port.value = '9090'; secret.value = ''; showAdd.value = false
 }
 function exportSettings() {
   const payload = { settings: { theme: theme.value, animations: animationsEnabled.value, hidePanelToolbar: hidePanelToolbar.value }, profiles: profiles.value }
@@ -270,8 +273,8 @@ window.addEventListener('android-back', handleAndroidBack)
       <section class="modal card">
         <div class="section-heading"><div><span class="eyebrow">CONNECTION</span><h2>Edit controller</h2></div><button class="close" @click="showEdit = false">×</button></div>
         <label for="edit-profile-name">Name (optional)</label><input id="edit-profile-name" v-model="name" placeholder="Home, VPS, Router…"/>
-        <label for="edit-connection-url">Dashboard / controller URL</label><input id="edit-connection-url" v-model="connectionUrl" autocapitalize="none" spellcheck="false"/>
-        <div class="modal-actions"><button class="secondary" @click="showEdit = false">Cancel</button><button @click="saveEdit" :disabled="!normalizeUrl(connectionUrl)">Save</button><button class="secondary" @click="removeProfile(editingId!); showEdit = false">Delete</button></div>
+        <label for="edit-host">Host / IP</label><input id="edit-host" v-model="host" placeholder="192.168.1.1" autocapitalize="none" spellcheck="false"/><label for="edit-port">Port</label><input id="edit-port" v-model="port" inputmode="numeric" placeholder="9090"/><label for="edit-secret">Secret (optional)</label><input id="edit-secret" v-model="secret" type="password" autocapitalize="none" spellcheck="false"/>
+        <div class="modal-actions"><button class="secondary" @click="showEdit = false">Cancel</button><button @click="saveEdit" :disabled="!controllerFromFields()">Save</button><button class="secondary" @click="removeProfile(editingId!); showEdit = false">Delete</button></div>
       </section>
     </div>
 
@@ -281,7 +284,7 @@ window.addEventListener('android-back', handleAndroidBack)
         <label for="profile-name">Name (optional)</label><input id="profile-name" v-model="name" placeholder="Home, VPS, Router…"/>
         <label for="connection-url">Dashboard / controller URL</label><input id="connection-url" :value="connectionUrl" @input="connectionUrl = ($event.target as HTMLInputElement).value.toLowerCase()" placeholder="http://192.168.1.1:9090/ui/metacubexd" autocapitalize="none" spellcheck="false"/>
         <p class="hint">Enter the dashboard URL. The controller address is detected automatically from its origin. Input is converted to lowercase.</p>
-        <div class="modal-actions"><button class="secondary" @click="showAdd = false">Cancel</button><button @click="addProfile" :disabled="!normalizeUrl(connectionUrl)">Save</button></div>
+        <div class="modal-actions"><button class="secondary" @click="showAdd = false">Cancel</button><button @click="addProfile" :disabled="!controllerFromFields()">Save</button></div>
       </section>
     </div>
   </main>
