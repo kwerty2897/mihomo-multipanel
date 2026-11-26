@@ -220,8 +220,10 @@ window.addEventListener('android-back', handleAndroidBack)
       <div v-if="devices.length" class="device-list">
         <article v-for="device in devices" :key="device.controller" class="device-card">
           <button class="device-heading" type="button" @click="toggleDevice(device.controller)"><div class="device-copy"><strong>{{ device.name }}</strong><span>{{ device.controller }}</span><small>{{ device.dashboards.length }} dashboard{{ device.dashboards.length === 1 ? "" : "s" }}</small></div><span class="device-chevron">{{ expandedDevices.includes(device.controller) ? "⌄" : "›" }}</span></button>
-          <div v-if="expandedDevices.includes(device.controller)" class="dashboard-grid">
-            <button v-for="dashboard in device.dashboards" :key="dashboard.id" class="dashboard-tile" type="button" @click="openDashboard(dashboard)"><span class="tile-icon">▦</span><strong>{{ dashboard.name }}</strong><span class="tile-url">{{ dashboard.panelUrl }}</span></button>
+          <div v-if="expandedDevices.includes(device.controller)" class="device-dashboards">
+            <div class="dashboard-grid" :class="'dashboard-count-' + device.dashboards.length">
+              <button v-for="dashboard in device.dashboards" :key="dashboard.id" class="dashboard-tile" type="button" @click="openDashboard(dashboard)" @touchstart="startLongPress(dashboard)" @touchend="cancelLongPress" @touchmove="cancelLongPress" @mousedown="startLongPress(dashboard)" @mouseup="cancelLongPress" @mouseleave="cancelLongPress"><span class="tile-icon">▦</span><strong>{{ dashboard.name }}</strong><span class="tile-url">{{ dashboard.panelUrl }}</span></button>
+            </div>
             <button class="dashboard-tile add-dashboard-tile" type="button" @click="prepareAddDashboard(device)"><span class="tile-icon">＋</span><strong>Add dashboard</strong><span class="tile-url">Add another panel to this device</span></button>
           </div>
         </article>
