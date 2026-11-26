@@ -98,6 +98,7 @@ async function checkController() {
   statusRequest?.abort()
   const request = new AbortController()
   statusRequest = request
+  const timeout = window.setTimeout(() => request.abort(), 8000)
   controllerStatus.value = 'checking'
   controllerStatusMessage.value = ''
   try {
@@ -109,13 +110,13 @@ async function checkController() {
     controllerStatusMessage.value = typeof data.version === 'string' ? 'Mihomo ' + data.version : 'Controller responds'
     controllerCheckedAt.value = new Date().toLocaleTimeString()
   } catch (error) {
-    if (request.signal.aborted) return
+    if (request.signal.aborted && statusRequest !== request) return
     controllerStatus.value = 'offline'
     controllerStatusMessage.value = error instanceof Error && error.name === 'TypeError'
       ? 'Could not reach Controller (network or CORS)'
       : 'Controller did not respond'
     controllerCheckedAt.value = new Date().toLocaleTimeString()
-  }
+  } finally { window.clearTimeout(timeout) }
 }
 watch(activeId, () => { if (current.value) checkController() }, { immediate: true })
 function openPanel() {
