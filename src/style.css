@@ -319,3 +319,9 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible),[role="button"]:foc
 
 /* Explicit light-theme foreground for primary modal Save buttons. */
 :root[data-theme="light"] .modal-actions button:not(.secondary){color:#000!important}
+
+
+/* Correct foreground contrast for primary buttons in light appearance. */
+:root[data-theme="light"] .add-button,
+:root[data-theme="light"] .modal-actions button:not(.secondary),
+:root[data-theme="light"] .backup-button:not(.secondary-backup){color:#000!important}
