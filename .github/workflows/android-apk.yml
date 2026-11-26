@@ -156,6 +156,22 @@ jobs:
 
               inner class SystemBarsBridge {
                   @android.webkit.JavascriptInterface
+                  fun getPalette(): String {
+                      if (android.os.Build.VERSION.SDK_INT < 31) return ""
+                      val names = listOf("system_accent1_600", "system_accent1_100", "system_accent1_200", "system_accent2_600", "system_accent2_100", "system_accent3_600", "system_accent3_100")
+                      val keys = listOf("primary", "primaryContainer", "secondary", "secondary", "secondaryContainer", "tertiary", "tertiaryContainer")
+                      val json = org.json.JSONObject()
+                      try {
+                          for (i in names.indices) {
+                              val id = resources.getIdentifier(names[i], "color", "android")
+                              if (id != 0) json.put(keys[i], String.format("#%06X", 0xFFFFFF and getColor(id)))
+                          }
+                          val id = resources.getIdentifier("system_accent1_700", "color", "android")
+                          if (id != 0) json.put("onPrimary", String.format("#%06X", 0xFFFFFF and getColor(id)))
+                      } catch (_: Exception) {}
+                      return json.toString()
+                  }
+                  @android.webkit.JavascriptInterface
                   fun setTheme(value: String) {
                       appTheme = if (value == "light" || value == "dark") value else "system"
                       getSharedPreferences("multipanel_theme", android.content.Context.MODE_PRIVATE).edit().putString("theme", appTheme).apply()
