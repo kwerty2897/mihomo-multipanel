@@ -1,0 +1,16 @@
+[package]
+name = "mihomo-multipanel"
+version = "0.1.0"
+description = "Multi-dashboard client for Mihomo"
+authors = ["Mihomo MultiPanel contributors"]
+edition = "2021"
+
+[lib]
+name = "mihomo_multipanel_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
