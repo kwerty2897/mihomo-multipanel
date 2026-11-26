@@ -92,7 +92,7 @@ jobs:
           base=next((n for n in style_names if "MainTheme" in n or "AppTheme" in n),None)
           if not base:
               base=next((n for n in style_names if "Tauri" in n),None)
-          if not base: base="Theme.MaterialComponents.DayNight.NoActionBar"
+          if not base: base="@android:style/Theme.Material.Light.NoActionBar"
           print("Using fallback Android theme parent:",base)
           (root/"values").mkdir(parents=True,exist_ok=True)
           (root/"values"/"multipanel_theme.xml").write_text(f'''<resources>
