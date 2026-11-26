@@ -25,6 +25,7 @@ const panelOpen = ref(false)
 const panelLoading = ref(false)
 const showSettings = ref(false)
 const showAbout = ref(false)
+const showTemplateSettings = ref(false)
 watch(showSettings, value => {
   document.body.style.overflow = value ? 'hidden' : ''
   document.body.style.touchAction = value ? 'none' : ''
@@ -183,6 +184,7 @@ function removeProfile(id: number) {
 
 function handleAndroidBack() {
   if (showAbout.value) { showAbout.value = false; return }
+  if (showTemplateSettings.value) { showTemplateSettings.value = false; return }
   if (showSettings.value) { themeMenuOpen.value = false; showSettings.value = false; return }
   if (showEdit.value) { showEdit.value = false; return }
   if (showAdd.value) { showAdd.value = false; return }
@@ -248,10 +250,7 @@ window.addEventListener('android-back', handleAndroidBack)
           <button class="switch" type="button" role="switch" :aria-checked="hidePanelToolbar" :class="{ enabled: hidePanelToolbar }" @click="hidePanelToolbar = !hidePanelToolbar"><span></span></button>
         </div>
         <div class="settings-divider"></div>
-        <div class="backup-title">Dashboard templates</div>
-        <p class="hint">Templates use %host, %port and %secret placeholders. Choose a template when adding a connection.</p>
-        <div v-for="t in panelTemplates" :key="t.id" class="animation-setting template-row"><div class="animation-setting-copy"><strong>{{ t.name }}</strong><span>{{ t.url }}</span></div><button class="secondary" @click="editTemplate(t)">Edit</button><button class="secondary" @click="deleteTemplate(t.id)">Remove</button></div>
-        <label for="template-name">Template name</label><input id="template-name" v-model="templateName" placeholder="My dashboard"/><label for="template-url">Template URL</label><textarea id="template-url" v-model="templateUrl" rows="3" placeholder="https://example.com/?hostname=%host&port=%port&secret=%secret"></textarea><div class="modal-actions"><button class="secondary" @click="editingTemplateId='';templateName='';templateUrl=''">Clear</button><button @click="saveTemplate" :disabled="!templateName.trim() || !templateUrl.trim()">{{ editingTemplateId ? 'Update template' : 'Add template' }}</button></div>
+        <button class="settings-subsection" type="button" @click="showTemplateSettings = true"><div class="settings-subsection-copy"><strong>Dashboard templates</strong><span>Manage templates and URL placeholders</span></div><span class="settings-subsection-arrow">›</span></button>
         <div class="settings-divider"></div>
         <div class="backup-title">Backup & restore</div>
         <p class="hint">Export or restore all saved controller connections, panel URLs and appearance settings in one JSON file.</p>
@@ -265,6 +264,15 @@ window.addEventListener('android-back', handleAndroidBack)
       </section>
     </div>
     </Transition>
+
+    <div v-if="showTemplateSettings" class="modal-backdrop" @click.self="showTemplateSettings = false">
+      <section class="modal card settings-modal template-settings-modal">
+        <div class="section-heading"><div><span class="eyebrow">DASHBOARD</span><h2>Dashboard templates</h2></div><button class="close" aria-label="Close template settings" @click="showTemplateSettings = false">×</button></div>
+        <p class="hint">Templates use %host, %port and %secret placeholders. Choose a template when adding a connection.</p>
+        <div v-for="t in panelTemplates" :key="t.id" class="animation-setting template-row"><div class="animation-setting-copy"><strong>{{ t.name }}</strong><span>{{ t.url }}</span></div><button class="secondary" @click="editTemplate(t)">Edit</button><button class="secondary" @click="deleteTemplate(t.id)">Remove</button></div>
+        <label for="template-name">Template name</label><input id="template-name" v-model="templateName" placeholder="My dashboard"/><label for="template-url">Template URL</label><textarea id="template-url" v-model="templateUrl" rows="3" placeholder="https://example.com/?hostname=%host&port=%port&secret=%secret"></textarea><div class="modal-actions"><button class="secondary" @click="editingTemplateId='';templateName='';templateUrl=''">Clear</button><button @click="saveTemplate" :disabled="!templateName.trim() || !templateUrl.trim()">{{ editingTemplateId ? 'Update template' : 'Add template' }}</button></div>
+      </section>
+    </div>
 
     <div v-if="showAbout" class="modal-backdrop about-backdrop" @click.self="showAbout = false">
       <section class="modal card about-modal">
