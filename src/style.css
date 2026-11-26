@@ -377,3 +377,12 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden;margin:0}
 .secret-input-wrap input{flex:1;min-width:0;margin-bottom:0!important}
 .secret-toggle{flex:none;padding:0 14px;border:1px solid var(--mp-outline);border-radius:12px;background:var(--mp-neutral);color:var(--mp-neutral-on);font-weight:650}
 .modal input:focus{color:var(--mp-text)!important;caret-color:var(--mp-accent)}
+
+/* Settings subpage navigation row */
+.settings-subsection{width:100%;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px;border:1px solid var(--mp-outline);border-radius:16px;background:var(--mp-surface2);color:var(--mp-text);text-align:left;cursor:pointer;margin-top:8px}
+.settings-subsection-copy{display:flex;flex-direction:column;gap:5px;min-width:0}
+.settings-subsection-copy strong{font-size:14px;font-weight:650}
+.settings-subsection-copy span{font-size:11px;color:var(--mp-muted);line-height:1.4}
+.settings-subsection-arrow{font-size:24px;color:var(--mp-muted);flex:none}
+:root[data-animations="on"] .settings-subsection{transition:background .18s ease,border-color .18s ease,transform .18s ease}
+:root[data-animations="on"] .settings-subsection:active{transform:scale(.98)}
