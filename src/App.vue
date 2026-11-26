@@ -24,12 +24,16 @@ const importInput = ref<HTMLInputElement | null>(null)
 const importMessage = ref('')
 watch([theme, animationsEnabled], ([themeValue, animationsValue]) => {
   try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ theme: themeValue, animations: animationsValue })) } catch { /* storage may be unavailable */ }
-  if (themeValue === 'system') document.documentElement.removeAttribute('data-theme')
-  else document.documentElement.setAttribute('data-theme', themeValue)
-  document.documentElement.setAttribute('data-animations', animationsValue ? 'on' : 'off')
+  const root = document.documentElement
+  root.setAttribute('data-theme', themeValue === 'system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : themeValue)
+  root.setAttribute('data-animations', animationsValue ? 'on' : 'off')
   const systemBars = (window as Window & { AndroidSystemBars?: { setTheme: (theme: string) => void } }).AndroidSystemBars
   systemBars?.setTheme(themeValue)
 }, { immediate: true })
+const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
+systemThemeQuery.addEventListener('change', () => {
+  if (theme.value === 'system') document.documentElement.setAttribute('data-theme', systemThemeQuery.matches ? 'dark' : 'light')
+})
 function loadSavedProfiles(): Profile[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
