@@ -3,6 +3,19 @@ import { computed, ref, watch } from 'vue'
 
 type Profile = { id: number; name: string; controller: string; panelUrl: string }
 const STORAGE_KEY = 'mihomo-multipanel-profiles-v1'
+const SETTINGS_KEY = 'mihomo-multipanel-settings-v1'
+type Theme = 'system' | 'light' | 'dark'
+const theme = ref<Theme>((() => {
+  try { const value = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}').theme; return ['system', 'light', 'dark'].includes(value) ? value : 'system' } catch { return 'system' }
+})())
+const showSettings = ref(false)
+const importInput = ref<HTMLInputElement | null>(null)
+const importMessage = ref('')
+watch(theme, value => {
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ theme: value })) } catch { /* storage may be unavailable */ }
+  if (value === 'system') document.documentElement.removeAttribute('data-theme')
+  else document.documentElement.setAttribute('data-theme', value)
+}, { immediate: true })
 function loadSavedProfiles(): Profile[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
@@ -37,6 +50,34 @@ function addProfile() {
   profiles.value.push(item); activeId.value = item.id
   name.value = ''; controller.value = ''; panelUrl.value = ''; showAdd.value = false
 }
+function exportSettings() {
+  const backup = { app: 'mihomo-multipanel', version: 1, exportedAt: new Date().toISOString(), settings: { theme: theme.value }, profiles: profiles.value }
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a'); link.href = url; link.download = 'mihomo-multipanel-backup-' + new Date().toISOString().slice(0, 10) + '.json'
+  document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url)
+  importMessage.value = 'Backup exported.'
+}
+async function importSettings(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  try {
+    const data: unknown = JSON.parse(await file.text())
+    if (!data || typeof data !== 'object') throw new Error('Invalid backup file.')
+    const backup = data as { app?: unknown; version?: unknown; profiles?: unknown; settings?: { theme?: unknown } }
+    if (backup.app !== 'mihomo-multipanel' || backup.version !== 1 || !Array.isArray(backup.profiles)) throw new Error('Unsupported backup format.')
+    const restored = backup.profiles.filter((item): item is Profile => !!item && typeof item === 'object' && typeof (item as Profile).id === 'number' && typeof (item as Profile).name === 'string' && typeof (item as Profile).controller === 'string' && typeof (item as Profile).panelUrl === 'string')
+    if (restored.length !== backup.profiles.length) throw new Error('Backup contains invalid connection entries.')
+    if (!window.confirm('Import ' + restored.length + ' connection(s) and settings? This will replace current saved data.')) return
+    profiles.value = restored
+    activeId.value = restored[0]?.id ?? null
+    const importedTheme = backup.settings?.theme
+    theme.value = ['system', 'light', 'dark'].includes(String(importedTheme)) ? importedTheme as Theme : 'system'
+    importMessage.value = 'Backup imported successfully.'
+  } catch (error) { importMessage.value = error instanceof Error ? error.message : 'Could not import backup.' }
+  finally { input.value = '' }
+}
 function removeProfile(id: number) {
   profiles.value = profiles.value.filter(p => p.id !== id)
   if (activeId.value === id) activeId.value = profiles.value[0]?.id ?? null
@@ -47,7 +88,7 @@ function removeProfile(id: number) {
   <main class="shell">
 
     <section id="overview" class="hero">
-      <div class="eyebrow">YOUR CONNECTION HUB</div>
+      <div class="hero-top"><div class="eyebrow">YOUR CONNECTION HUB</div><button class="settings-button" aria-label="Settings" title="Settings" @click="showSettings = true">⚙</button></div>
       <h1>One place for<br/><em>every dashboard.</em></h1>
       <p>Save controller addresses and use your preferred dashboard URL.</p>
     </section>
@@ -66,6 +107,26 @@ function removeProfile(id: number) {
       <div class="preview card"><div class="preview-head"><span class="eyebrow">PANEL URL</span><span class="pill">Custom</span></div><h3>MetaCubeXD</h3><p>{{ current.panelUrl }}</p><p class="hint">Panel loading and API integration are not implemented yet.</p></div>
     </section>
     <footer>MIHOMO MULTIPANEL <span>•</span> EARLY PROTOTYPE</footer>
+
+    <div v-if="showSettings" class="modal-backdrop" @click.self="showSettings = false">
+      <section class="modal card settings-modal">
+        <div class="section-heading"><div><span class="eyebrow">PREFERENCES & BACKUP</span><h2>Settings</h2></div><button class="close" aria-label="Close settings" @click="showSettings = false">×</button></div>
+        <label for="theme-choice">Appearance</label>
+        <select id="theme-choice" v-model="theme" class="settings-select">
+          <option value="system">Use system theme</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+        <div class="settings-divider"></div>
+        <div class="backup-title">Backup & restore</div>
+        <p class="hint">Export or restore all saved controller connections, panel URLs and appearance settings in one JSON file.</p>
+        <button class="backup-button" @click="exportSettings">Export settings</button>
+        <button class="backup-button secondary-backup" @click="importInput?.click()">Import settings</button>
+        <input ref="importInput" class="file-input" type="file" accept=".json,application/json" @change="importSettings" />
+        <p v-if="importMessage" class="import-message" role="status">{{ importMessage }}</p>
+        <p class="hint security-note">The backup contains your saved addresses. Keep the file private if it includes internal network details.</p>
+      </section>
+    </div>
 
     <div v-if="showAdd" class="modal-backdrop" @click.self="showAdd = false">
       <section class="modal card">
