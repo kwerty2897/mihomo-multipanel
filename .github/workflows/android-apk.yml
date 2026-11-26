@@ -117,25 +117,36 @@ jobs:
         run: |
           set -euo pipefail
           KEYSTORE="$RUNNER_TEMP/mihomo-multipanel-signing.jks"
-          if [ -n "$SIGNING_KEY_BASE64" ] && [ -n "$SIGNING_KEY_PASSWORD" ] && [ -n "$SIGNING_KEY_ALIAS" ]; then
-            echo "Using configured persistent signing key."
+          if [ -n "$SIGNING_KEY_BASE64" ] && [ -n "$SIGNING_KEY_PASSWORD" ]; then
             echo "$SIGNING_KEY_BASE64" | base64 -d > "$KEYSTORE"
+            # Confirm the configured alias is actually a private-key entry; auto-select one if needed.
+            listing="$(keytool -list -v -keystore "$KEYSTORE" -storepass "$SIGNING_KEY_PASSWORD")"
+            if [ -n "$SIGNING_KEY_ALIAS" ] && echo "$listing" | grep -A3 -F "Alias name: $SIGNING_KEY_ALIAS" | grep -q "PrivateKeyEntry"; then
+              alias="$SIGNING_KEY_ALIAS"
+            else
+              alias="$(printf '%s\n' "$listing" | awk '/Alias name:/{a=$3}/Entry type: PrivateKeyEntry/{print a;exit}')"
+              if [ -z "$alias" ]; then
+                echo "::error::Keystore contains no PrivateKeyEntry. Check the uploaded keystore and password."
+                exit 1
+              fi
+              echo "::warning::Secret alias did not match a private-key entry; selected alias from keystore."
+            fi
+            echo "Using persistent signing keystore and alias: $alias"
           else
-            echo "::warning::Persistent signing secrets are not configured. APKs will be signed with an ephemeral key; future updates signed this way cannot update APKs signed with another key."
+            echo "::warning::Persistent signing secrets missing; temporary signing key used."
             SIGNING_KEY_PASSWORD="$(openssl rand -hex 24)"
-            SIGNING_KEY_ALIAS="multipanel-temporary"
-            keytool -genkeypair -v -keystore "$KEYSTORE" -storepass "$SIGNING_KEY_PASSWORD" -keypass "$SIGNING_KEY_PASSWORD" -alias "$SIGNING_KEY_ALIAS" -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Mihomo MultiPanel, OU=Android, O=MultiPanel, L=, ST=, C=US"
+            alias="multipanel-temporary"
+            keytool -genkeypair -keystore "$KEYSTORE" -storepass "$SIGNING_KEY_PASSWORD" -keypass "$SIGNING_KEY_PASSWORD" -alias "$alias" -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Mihomo MultiPanel, OU=Android, O=MultiPanel, C=US"
           fi
-          export SIGNING_KEY_PASSWORD SIGNING_KEY_ALIAS
+          export SIGNING_KEY_PASSWORD
           APKSIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
           shopt -s globstar nullglob
           apks=(src-tauri/gen/android/app/build/outputs/apk/**/*.apk)
           for apk in "${apks[@]}"; do
             [[ "$apk" == *-unsigned.apk ]] || continue
-            "$APKSIGNER" sign --ks "$KEYSTORE" --ks-pass env:SIGNING_KEY_PASSWORD --key-pass env:SIGNING_KEY_PASSWORD --ks-key-alias "$SIGNING_KEY_ALIAS" "$apk"
+            "$APKSIGNER" sign --ks "$KEYSTORE" --ks-pass env:SIGNING_KEY_PASSWORD --key-pass env:SIGNING_KEY_PASSWORD --ks-key-alias "$alias" "$apk"
             "$APKSIGNER" verify --verbose --print-certs "$apk"
-            signed="${apk%-unsigned.apk}.apk"
-            mv "$apk" "$signed"
+            mv "$apk" "${apk%-unsigned.apk}.apk"
           done
           rm -f "$KEYSTORE"
       - uses: actions/upload-artifact@v4
