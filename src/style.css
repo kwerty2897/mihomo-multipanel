@@ -339,3 +339,8 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible),[role="button"]:foc
 :root .modal-backdrop .modal-actions button:not(.secondary){background:var(--mp-neutral)!important;color:var(--mp-neutral-on)!important;border-color:var(--mp-outline)!important}
 /* Keep the greeting on one line whenever possible, with a slightly smaller type size. */
 :root .hero-top h1{font-size:clamp(32px,5vw,52px);white-space:normal}
+
+
+/* Panel loading indicator moves to the top when the custom toolbar is disabled. */
+:root .panel-loading.toolbarHidden{top:0!important;}
+:root .panel-frame{background:var(--mp-bg)!important;}
