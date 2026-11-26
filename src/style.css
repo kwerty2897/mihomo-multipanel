@@ -386,3 +386,6 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden;margin:0}
 .settings-subsection-arrow{font-size:24px;color:var(--mp-muted);flex:none}
 :root[data-animations="on"] .settings-subsection{transition:background .18s ease,border-color .18s ease,transform .18s ease}
 :root[data-animations="on"] .settings-subsection:active{transform:scale(.98)}
+
+/* Keep the native file picker input hidden; Import settings triggers it programmatically. */
+.settings-modal input.file-input{display:none!important;width:0!important;height:0!important;padding:0!important;margin:0!important;border:0!important;}
