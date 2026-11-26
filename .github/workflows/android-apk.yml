@@ -54,8 +54,6 @@ jobs:
         run: |
           rm -rf src-tauri/gen/android
           npx tauri android init
-          test -f src-tauri/gen/android/tauri.settings.gradle
-          test -f src-tauri/gen/android/settings.gradle
       - name: Configure Android adaptive and themed icons
         run: |
           RES=src-tauri/gen/android/app/src/main/res
