@@ -5,21 +5,24 @@ type Profile = { id: number; name: string; controller: string; panelUrl: string 
 const STORAGE_KEY = 'mihomo-multipanel-profiles-v1'
 const SETTINGS_KEY = 'mihomo-multipanel-settings-v1'
 type Theme = 'system' | 'light' | 'dark'
-const theme = ref<Theme>((() => {
-  try { const value = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}').theme; return ['system', 'light', 'dark'].includes(value) ? value : 'system' } catch { return 'system' }
-})())
+const savedSettings = (() => {
+  try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') } catch { return {} }
+})()
+const theme = ref<Theme>(['system', 'light', 'dark'].includes(savedSettings.theme) ? savedSettings.theme : 'system')
+const animationsEnabled = ref(savedSettings.animations !== false)
 const panelOpen = ref(false)
 const panelLoading = ref(false)
 const showSettings = ref(false)
 const showAbout = ref(false)
 const importInput = ref<HTMLInputElement | null>(null)
 const importMessage = ref('')
-watch(theme, value => {
-  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ theme: value })) } catch { /* storage may be unavailable */ }
-  if (value === 'system') document.documentElement.removeAttribute('data-theme')
-  else document.documentElement.setAttribute('data-theme', value)
+watch([theme, animationsEnabled], ([themeValue, animationsValue]) => {
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ theme: themeValue, animations: animationsValue })) } catch { /* storage may be unavailable */ }
+  if (themeValue === 'system') document.documentElement.removeAttribute('data-theme')
+  else document.documentElement.setAttribute('data-theme', themeValue)
+  document.documentElement.setAttribute('data-animations', animationsValue ? 'on' : 'off')
   const systemBars = (window as Window & { AndroidSystemBars?: { setTheme: (theme: string) => void } }).AndroidSystemBars
-  systemBars?.setTheme(value)
+  systemBars?.setTheme(themeValue)
 }, { immediate: true })
 function loadSavedProfiles(): Profile[] {
   try {
@@ -56,7 +59,7 @@ function addProfile() {
   name.value = ''; controller.value = ''; panelUrl.value = ''; showAdd.value = false
 }
 function exportSettings() {
-  const backup = { app: 'mihomo-multipanel', version: 1, exportedAt: new Date().toISOString(), settings: { theme: theme.value }, profiles: profiles.value }
+  const backup = { app: 'mihomo-multipanel', version: 1, exportedAt: new Date().toISOString(), settings: { theme: theme.value, animations: animationsEnabled.value }, profiles: profiles.value }
   const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a'); link.href = url; link.download = 'mihomo-multipanel-backup-' + new Date().toISOString().slice(0, 10) + '.json'
@@ -70,7 +73,7 @@ async function importSettings(event: Event) {
   try {
     const data: unknown = JSON.parse(await file.text())
     if (!data || typeof data !== 'object') throw new Error('Invalid backup file.')
-    const backup = data as { app?: unknown; version?: unknown; profiles?: unknown; settings?: { theme?: unknown } }
+    const backup = data as { app?: unknown; version?: unknown; profiles?: unknown; settings?: { theme?: unknown; animations?: unknown } }
     if (backup.app !== 'mihomo-multipanel' || backup.version !== 1 || !Array.isArray(backup.profiles)) throw new Error('Unsupported backup format.')
     const restored = backup.profiles.filter((item): item is Profile => !!item && typeof item === 'object' && typeof (item as Profile).id === 'number' && typeof (item as Profile).name === 'string' && typeof (item as Profile).controller === 'string' && typeof (item as Profile).panelUrl === 'string')
     if (restored.length !== backup.profiles.length) throw new Error('Backup contains invalid connection entries.')
@@ -79,6 +82,7 @@ async function importSettings(event: Event) {
     activeId.value = restored[0]?.id ?? null
     const importedTheme = backup.settings?.theme
     theme.value = ['system', 'light', 'dark'].includes(String(importedTheme)) ? importedTheme as Theme : 'system'
+    animationsEnabled.value = backup.settings?.animations !== false
     importMessage.value = 'Backup imported successfully.'
   } catch (error) { importMessage.value = error instanceof Error ? error.message : 'Could not import backup.' }
   finally { input.value = '' }
@@ -144,6 +148,10 @@ function removeProfile(id: number) {
           <option value="light">Light</option>
           <option value="dark">Dark</option>
         </select>
+        <div class="animation-setting">
+          <div class="animation-setting-copy"><strong>Interface animations</strong><span>Subtle transitions and button feedback</span></div>
+          <button class="switch" type="button" role="switch" :aria-checked="animationsEnabled" :class="{ enabled: animationsEnabled }" @click="animationsEnabled = !animationsEnabled"><span></span></button>
+        </div>
         <div class="settings-divider"></div>
         <div class="backup-title">Backup & restore</div>
         <p class="hint">Export or restore all saved controller connections, panel URLs and appearance settings in one JSON file.</p>
