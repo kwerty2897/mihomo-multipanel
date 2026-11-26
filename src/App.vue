@@ -48,8 +48,8 @@ watch(profiles, value => {
 }, { deep: true })
 const showAdd = ref(false)
 const name = ref('')
-const controller = ref('')
-const panelUrl = ref('')
+const connectionUrl = ref('')
+function deriveController(value: string) { const normalized = normalizeUrl(value); if (!normalized) return ''; try { return new URL(normalized).origin } catch { return '' } }
 const current = computed(() => profiles.value.find(p => p.id === activeId.value) ?? null)
 function normalizeUrl(value: string) {
   const v = value.trim()
@@ -57,12 +57,12 @@ function normalizeUrl(value: string) {
   try { const u = new URL(v.includes('://') ? v : 'http://' + v); if (!['http:', 'https:'].includes(u.protocol)) return ''; return u.toString().replace(/\/$/, '') } catch { return '' }
 }
 function addProfile() {
-  const c = normalizeUrl(controller.value)
-  const p = normalizeUrl(panelUrl.value)
+  const p = normalizeUrl(connectionUrl.value)
+  const c = deriveController(connectionUrl.value)
   if (!c || !p) return
   const item: Profile = { id: Date.now(), name: name.value.trim() || c, controller: c, panelUrl: p }
   profiles.value.push(item); activeId.value = item.id
-  name.value = ''; controller.value = ''; panelUrl.value = ''; showAdd.value = false
+  name.value = ''; connectionUrl.value = ''; showAdd.value = false
 }
 function exportSettings() {
   const payload = { settings: { theme: theme.value, animations: animationsEnabled.value }, profiles: profiles.value }
@@ -228,10 +228,9 @@ function removeProfile(id: number) {
       <section class="modal card">
         <div class="section-heading"><div><span class="eyebrow">NEW CONNECTION</span><h2>Add controller</h2></div><button class="close" @click="showAdd = false">×</button></div>
         <label for="profile-name">Name (optional)</label><input id="profile-name" v-model="name" placeholder="Home, VPS, Router…"/>
-        <label for="controller-url">Mihomo controller address</label><input id="controller-url" v-model="controller" placeholder="http://192.168.1.1:9090"/>
-        <label for="panel-url">Dashboard URL</label><input id="panel-url" v-model="panelUrl" placeholder="http://192.168.1.1:9090/ui/metacubexd"/>
-        <p class="hint">Enter the controller's external address and the URL of the panel configured on it. URLs must start with http:// or https:// (or will be treated as http://).</p>
-        <div class="modal-actions"><button class="secondary" @click="showAdd = false">Cancel</button><button @click="addProfile" :disabled="!normalizeUrl(controller) || !normalizeUrl(panelUrl)">Save</button></div>
+        <label for="connection-url">Dashboard / controller URL</label><input id="connection-url" :value="connectionUrl" @input="connectionUrl = ($event.target as HTMLInputElement).value.toLowerCase()" placeholder="http://192.168.1.1:9090/ui/metacubexd" autocapitalize="none" spellcheck="false"/>
+        <p class="hint">Enter the dashboard URL. The controller address is detected automatically from its origin. Input is converted to lowercase.</p>
+        <div class="modal-actions"><button class="secondary" @click="showAdd = false">Cancel</button><button @click="addProfile" :disabled="!normalizeUrl(connectionUrl)">Save</button></div>
       </section>
     </div>
   </main>
