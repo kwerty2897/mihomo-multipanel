@@ -213,3 +213,24 @@ button,a,[role="button"],.panel-card,.add-button,.theme-picker-option{
   outline:none;
 }
 button:focus:not(:focus-visible),a:focus:not(:focus-visible),[role="button"]:focus:not(:focus-visible){outline:none;}
+
+
+/* Controller connectivity status */
+.controller-status{margin-top:16px;padding:16px;border-radius:18px}
+.status-row{display:flex;align-items:center;gap:10px}
+.status-row strong{font-size:13px;flex:1}
+.status-indicator{width:10px;height:10px;border-radius:50%;background:#8c8797;flex:none}
+.status-indicator.checking{background:#bda7ff;animation:mp-status-pulse 1s ease-in-out infinite}
+.status-indicator.online{background:#42b883;box-shadow:0 0 0 4px #42b88322}
+.status-indicator.offline{background:#e26c73;box-shadow:0 0 0 4px #e26c7322}
+.status-refresh{width:34px;height:34px;border:1px solid #383642;border-radius:11px;background:#282532;color:inherit;font-size:20px;cursor:pointer}
+.status-refresh:disabled{opacity:.45}
+.controller-status p{margin:10px 0 0;font-size:12px;color:#a6a2b1;line-height:1.5}
+.controller-status .status-time{display:block;margin-top:8px;font-size:10px;color:#858090}
+.controller-status .status-disclaimer{font-size:10px;opacity:.8}
+@keyframes mp-status-pulse{50%{opacity:.45}}
+@media(prefers-color-scheme:light){.status-refresh{background:#f1edf7;border-color:#ddd7e7;color:#393343}.controller-status p{color:#686373}}
+:root[data-theme="light"] .status-refresh{background:#f1edf7;border-color:#ddd7e7;color:#393343}
+:root[data-theme="light"] .controller-status p{color:#686373}
+:root[data-theme="dark"] .status-refresh{background:#282532;border-color:#383541;color:#eee9f8}
+:root[data-theme="dark"] .controller-status p{color:#a6a2b1}
