@@ -7,6 +7,7 @@ on:
     paths:
       - 'src/**'
       - 'src-tauri/**'
+      - 'android-templates/**'
       - 'index.html'
       - 'package.json'
       - 'package-lock.json'
@@ -301,7 +302,7 @@ jobs:
             test -s "$RES/mipmap-$density/ic_launcher_round.png"
           done
 
-          mkdir -p "$RES/drawable" "$RES/mipmap-anydpi-v26"
+          mkdir -p "$RES/drawable" "$RES/drawable-v24" "$RES/mipmap-anydpi-v26"
           # Use Tauri's generated density-specific PNG presets directly.
           # SVG source is transparent, so generated launcher PNGs retain transparent backgrounds.
           # Copy repository-maintained Android icon resource presets.
@@ -351,6 +352,14 @@ jobs:
             [[ "$apk" == *-unsigned.apk ]] || continue
             echo "Checking launcher metadata: $apk"
             "$AAPT" dump badging "$apk" | grep -E "^(application:|application-icon)"
+            manifest_dump="$("$AAPT" dump xmltree "$apk" AndroidManifest.xml)"
+            grep -q "mipmap/ic_launcher" <<< "$manifest_dump"
+            grep -q "mipmap/ic_launcher_round" <<< "$manifest_dump"
+            resources_dump="$("$AAPT" dump resources "$apk")"
+            grep -q "ic_launcher_foreground" <<< "$resources_dump"
+            grep -q "ic_launcher_transparent_background" <<< "$resources_dump"
+            grep -q "ic_launcher_monochrome" <<< "$resources_dump"
+            echo "Adaptive icon resources verified in compiled APK."
           done
       - name: Sign APKs (persistent key or temporary fallback)
         env:
