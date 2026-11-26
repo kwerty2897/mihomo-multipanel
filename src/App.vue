@@ -234,7 +234,7 @@ function removeProfile(id: number) {
     <div v-if="showAbout" class="modal-backdrop about-backdrop" @click.self="showAbout = false">
       <section class="modal card about-modal">
         <div class="section-heading"><div><span class="eyebrow">APPLICATION</span><h2>About</h2></div><button class="close" aria-label="Close about" @click="showAbout = false">×</button></div>
-        <div class="about-brand"><div class="about-logo" aria-label="Mihomo MultiPanel app icon"><svg viewBox="0 0 512 512" role="img" aria-hidden="true"><path fill="#000" d="M256 64 432 160 432 352 256 448 80 352 80 160Z"/><g fill="none" stroke="#fff" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"><path d="M256 64 432 160 432 352 256 448 80 352 80 160Z M80 160 256 256 432 160 M256 256V448"/></g></svg></div><div><strong>Mihomo MultiPanel</strong><span>Version 0.1.0</span></div></div>
+        <div class="about-brand"><div class="about-logo" aria-label="Mihomo MultiPanel app icon"><svg viewBox="0 0 512 512" role="img" aria-hidden="true"><g transform="translate(92 92) scale(.64)"><path fill="#000" d="M256 64 432 160 432 352 256 448 80 352 80 160Z"/><g fill="none" stroke="#fff" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"><path d="M256 64 432 160 432 352 256 448 80 352 80 160Z M80 160 256 256 432 160 M256 256V448"/></g></g></svg></div><div><strong>Mihomo MultiPanel</strong><span>Version 0.1.0</span></div></div>
         <p class="hint about-description">A simple hub for managing Mihomo controllers and web dashboards.</p>
         <a class="about-link" href="https://github.com/kwerty2897/mihomo-multipanel" target="_blank" rel="noreferrer">GitHub project <span>↗</span></a>
         <p class="about-footer">Made for the Mihomo community.</p>
