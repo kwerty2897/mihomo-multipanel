@@ -159,8 +159,8 @@ jobs:
                   @android.webkit.JavascriptInterface
                   fun getPalette(): String {
                       if (android.os.Build.VERSION.SDK_INT < 31) return ""
-                      val names = listOf("system_accent1_600", "system_accent1_100", "system_accent1_200", "system_accent2_600", "system_accent2_100", "system_accent3_600", "system_accent3_100")
-                      val keys = listOf("primary", "primaryContainer", "secondary", "secondary", "secondaryContainer", "tertiary", "tertiaryContainer")
+                      val names = listOf("system_accent1_600", "system_accent1_100", "system_accent2_600", "system_accent2_100", "system_accent3_600", "system_accent3_100")
+                      val keys = listOf("primary", "primaryContainer", "secondary", "secondaryContainer", "tertiary", "tertiaryContainer")
                       val json = org.json.JSONObject()
                       try {
                           for (i in names.indices) {
