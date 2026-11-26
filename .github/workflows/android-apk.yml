@@ -357,10 +357,13 @@ jobs:
             grep -q "android:icon" <<< "$manifest_dump"
             grep -q "android:roundIcon" <<< "$manifest_dump"
             resources_dump="$("$AAPT" dump resources "$apk")"
-            grep -q "ic_launcher_foreground" <<< "$resources_dump"
-            grep -q "ic_launcher_transparent_background" <<< "$resources_dump"
-            grep -q "ic_launcher_monochrome" <<< "$resources_dump"
-            echo "Adaptive icon resources verified in compiled APK."
+            grep -q "mipmap/ic_launcher" <<< "$resources_dump"
+            grep -q "mipmap/ic_launcher_round" <<< "$resources_dump"
+            if grep -q "mipmap-anydpi-v26/ic_launcher" <<< "$resources_dump"; then
+              echo "::error::Adaptive icon XML still overrides transparent PNG launcher icons."
+              exit 1
+            fi
+            echo "Legacy transparent launcher PNG resources verified; adaptive XML overrides absent."
           done
       - name: Sign APKs (persistent key or temporary fallback)
         env:
