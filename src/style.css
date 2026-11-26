@@ -130,3 +130,45 @@ input,textarea,select,[contenteditable="true"]{-webkit-user-select:text;user-sel
 .panel-toolbar{height:calc(58px + env(safe-area-inset-top));min-height:calc(58px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top)}
 .panel-frame{height:calc(100% - 58px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}
 .panel-loading{top:calc(58px + env(safe-area-inset-top))}
+
+
+/* Optional interface motion */
+.animation-setting{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:20px}
+.animation-setting-copy{display:flex;flex-direction:column;gap:5px}
+.animation-setting-copy strong{font-size:13px;font-weight:650}
+.animation-setting-copy span{font-size:11px;color:#a6a2b1;line-height:1.4}
+.switch{position:relative;flex:none;width:48px;height:28px;padding:3px;border:1px solid #625b70;border-radius:99px;background:#34313e;cursor:pointer;transition:background .2s,border-color .2s}
+.switch span{display:block;width:20px;height:20px;border-radius:50%;background:#e8e2f2;transform:translateX(0);transition:transform .2s cubic-bezier(.2,.8,.2,1),background .2s}
+.switch.enabled{background:#a98be8;border-color:#a98be8}
+.switch.enabled span{transform:translateX(20px);background:#211a30}
+@media(prefers-color-scheme:light){
+ .animation-setting-copy span{color:#686373}
+ .switch{background:#e9e5ef;border-color:#d0c9da}
+ .switch span{background:#fff}
+ .switch.enabled{background:#8060b7;border-color:#8060b7}
+ .switch.enabled span{background:#fff}
+}
+:root[data-theme="light"] .animation-setting-copy span{color:#686373}
+:root[data-theme="dark"] .animation-setting-copy span{color:#a6a2b1}
+:root[data-theme="light"] .switch{background:#e9e5ef;border-color:#d0c9da}
+:root[data-theme="light"] .switch span{background:#fff}
+:root[data-theme="light"] .switch.enabled{background:#8060b7;border-color:#8060b7}
+:root[data-theme="dark"] .switch{background:#34313e;border-color:#625b70}
+:root[data-theme="dark"] .switch span{background:#e8e2f2}
+:root[data-theme="dark"] .switch.enabled{background:#a98be8;border-color:#a98be8}
+
+:root[data-animations="on"] .card,
+:root[data-animations="on"] .panel-card,
+:root[data-animations="on"] button,
+:root[data-animations="on"] .settings-select,
+:root[data-animations="on"] .about-link{transition:background-color .18s ease,border-color .18s ease,color .18s ease,transform .18s ease,box-shadow .18s ease}
+:root[data-animations="on"] button:active{transform:scale(.97)}
+:root[data-animations="on"] .panel-card:active{transform:scale(.99)}
+:root[data-animations="on"] .panel-card.selected{box-shadow:0 0 0 1px #a78bfa22}
+:root[data-animations="on"] .modal-backdrop{animation:mp-fade-in .18s ease both}
+:root[data-animations="on"] .modal{animation:mp-modal-in .22s cubic-bezier(.2,.8,.2,1) both}
+@keyframes mp-fade-in{from{opacity:0}to{opacity:1}}
+@keyframes mp-modal-in{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+:root[data-animations="off"] *,
+:root[data-animations="off"] *::before,
+:root[data-animations="off"] *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
