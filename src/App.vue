@@ -65,7 +65,9 @@ function addProfile() {
   name.value = ''; controller.value = ''; panelUrl.value = ''; showAdd.value = false
 }
 function exportSettings() {
-  const backup = { app: 'mihomo-multipanel', version: 1, exportedAt: new Date().toISOString(), settings: { theme: theme.value, animations: animationsEnabled.value }, profiles: profiles.value }
+  const payload = { settings: { theme: theme.value, animations: animationsEnabled.value }, profiles: profiles.value }
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))))
+  const backup = { app: 'mihomo-multipanel', version: 2, exportedAt: new Date().toISOString(), secret: encoded }
   const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a'); link.href = url; link.download = 'mihomo-multipanel-backup-' + new Date().toISOString().slice(0, 10) + '.json'
@@ -79,8 +81,14 @@ async function importSettings(event: Event) {
   try {
     const data: unknown = JSON.parse(await file.text())
     if (!data || typeof data !== 'object') throw new Error('Invalid backup file.')
-    const backup = data as { app?: unknown; version?: unknown; profiles?: unknown; settings?: { theme?: unknown; animations?: unknown } }
-    if (backup.app !== 'mihomo-multipanel' || backup.version !== 1 || !Array.isArray(backup.profiles)) throw new Error('Unsupported backup format.')
+    const outer = data as { app?: unknown; version?: unknown; profiles?: unknown; settings?: { theme?: unknown; animations?: unknown }; secret?: unknown }
+    if (outer.app !== 'mihomo-multipanel') throw new Error('Unsupported backup format.')
+    let backup: { profiles?: unknown; settings?: { theme?: unknown; animations?: unknown } }
+    if (outer.version === 1) backup = outer
+    else if (outer.version === 2 && typeof outer.secret === 'string') {
+      backup = JSON.parse(decodeURIComponent(escape(atob(outer.secret))))
+    } else throw new Error('Unsupported backup format.')
+    if (!Array.isArray(backup.profiles)) throw new Error('Backup contains no valid connection list.')
     const restored = backup.profiles.filter((item): item is Profile => !!item && typeof item === 'object' && typeof (item as Profile).id === 'number' && typeof (item as Profile).name === 'string' && typeof (item as Profile).controller === 'string' && typeof (item as Profile).panelUrl === 'string')
     if (restored.length !== backup.profiles.length) throw new Error('Backup contains invalid connection entries.')
     if (!window.confirm('Import ' + restored.length + ' connection(s) and settings? This will replace current saved data.')) return
@@ -150,9 +158,7 @@ function removeProfile(id: number) {
     </section>
     <template v-else>
     <section id="overview" class="hero">
-      <div class="hero-top"><div class="eyebrow">YOUR CONNECTION HUB</div><button class="settings-button" aria-label="Settings" title="Settings" @click="showSettings = true">⚙</button></div>
-      <h1>One place for<br/><em>every dashboard.</em></h1>
-      <p>Save controller addresses and use your preferred dashboard URL.</p>
+      <div class="hero-top"><h1>One place for<br/><em>every dashboard.</em></h1><button class="settings-button" aria-label="Settings" title="Settings" @click="showSettings = true">⚙</button></div>
     </section>
     <section id="connections" class="connection card">
       <div class="section-heading"><div><span class="eyebrow">CONTROLLERS</span><h2>Your connections</h2></div><span class="pill">{{ profiles.length }} saved</span></div>
@@ -174,7 +180,7 @@ function removeProfile(id: number) {
       </div>
       <div class="preview card"><div class="preview-head"><span class="eyebrow">PANEL URL</span><span class="pill">Ready</span></div><h3>Dashboard</h3><p>{{ current.panelUrl }}</p><button class="open-panel-button" @click="openPanel">Open dashboard <span>↗</span></button><p class="hint">The dashboard opens inside the app. Its own update mechanism remains unchanged.</p></div>
     </section>
-    <footer>MIHOMO MULTIPANEL <span>•</span> EARLY PROTOTYPE</footer>
+    <footer>EARLY PROTOTYPE</footer>
     </template>
 
     <div v-if="showSettings" class="modal-backdrop" @click.self="showSettings = false">
