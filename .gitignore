@@ -1,0 +1,16 @@
+# Local Android signing material — never commit
+*.jks
+*.keystore
+*.key
+*.pem
+android-signing-key*
+*-release-password.txt
+signing-password.txt
+
+# Local environment files
+.env
+.env.*
+
+# Build outputs and dependencies
+node_modules/
+target/
