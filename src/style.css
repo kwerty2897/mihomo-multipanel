@@ -77,3 +77,13 @@
 /* Prevent accidental text selection in the app UI; keep form controls editable. */
 html,body,.shell,.shell *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 input,textarea,select,[contenteditable="true"]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+
+:root[data-theme="dark"] .card,:root[data-theme="dark"] .panel-card{border-color:#33313c;background:#1a1921;color:#f3f1f8}
+:root[data-theme="dark"] .panel-card.selected{border-color:#a78bfa;background:#282333}
+:root[data-theme="dark"] .hero p,:root[data-theme="dark"] .hint,:root[data-theme="dark"] .preview p,:root[data-theme="dark"] .panel-copy span{color:#a6a2b1}
+:root[data-theme="dark"] .settings-button{border-color:#383642;background:#1a1921;color:#d8d0e8}
+:root[data-theme="dark"] .settings-select,:root[data-theme="dark"] .modal input{border-color:#3b3845;background:#111117;color:#fff}
+:root[data-theme="dark"] .settings-divider{background:#383541}
+:root[data-theme="dark"] .secondary-backup,:root[data-theme="dark"] .about-button{background:#34313e;color:#eee9f8}
+:root[data-theme="dark"] .about-link{border-color:#3b3845;color:#cbbaff}
+:root[data-theme="dark"] .about-brand span,:root[data-theme="dark"] .about-footer{color:#a6a2b1}
