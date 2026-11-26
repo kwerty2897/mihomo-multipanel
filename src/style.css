@@ -348,3 +348,6 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible),[role="button"]:foc
 /* Align greeting's visual center with the settings control */
 .hero-top{align-items:center;min-height:40px}
 .hero-top h1{margin:0;line-height:1.08}
+
+/* Keep panel content below the transparent Android status bar. */
+:root .panel-viewer{padding-top:24px}
