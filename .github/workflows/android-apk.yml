@@ -78,11 +78,11 @@ jobs:
             <monochrome android:drawable="@drawable/ic_launcher_monochrome"/>
           </adaptive-icon>
           XML
-      - name: Build debug APK via Tauri
-        run: npx tauri android build --debug --apk
+      - name: Build optimized release APK via Tauri
+        run: npx tauri android build --apk
       - uses: actions/upload-artifact@v4
         with:
           name: mihomo-multipanel-apk
-          path: src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk
+          path: src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk
           if-no-files-found: error
           retention-days: 14
