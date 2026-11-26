@@ -219,26 +219,6 @@ button,a,.add-button,.theme-picker-option{
 button:focus:not(:focus-visible),a:focus:not(:focus-visible),[role="button"]:focus:not(:focus-visible){outline:none;}
 
 
-/* Controller connectivity status */
-.controller-status{margin-top:16px;padding:16px;border-radius:18px}
-.status-row{display:flex;align-items:center;gap:10px}
-.status-row strong{font-size:13px;flex:1}
-.status-indicator{width:10px;height:10px;border-radius:50%;background:#8c8797;flex:none}
-.status-indicator.checking{background:var(--monet-primary);animation:mp-status-pulse 1s ease-in-out infinite}
-.status-indicator.online{background:#42b883;box-shadow:0 0 0 4px #42b88322}
-.status-indicator.offline{background:#e26c73;box-shadow:0 0 0 4px #e26c7322}
-.status-refresh{width:34px;height:34px;border:1px solid #383642;border-radius:11px;background:#282532;color:inherit;font-size:20px;cursor:pointer}
-.status-refresh:disabled{opacity:.45}
-.controller-status p{margin:10px 0 0;font-size:12px;color:#a6a2b1;line-height:1.5}
-.controller-status .status-time{display:block;margin-top:8px;font-size:10px;color:#858090}
-.controller-status .status-disclaimer{font-size:10px;opacity:.8}
-@keyframes mp-status-pulse{50%{opacity:.45}}
-@media(prefers-color-scheme:light){.status-refresh{background:#f1edf7;border-color:#ddd7e7;color:#393343}.controller-status p{color:#686373}}
-:root[data-theme="light"] .status-refresh{background:#f1edf7;border-color:#ddd7e7;color:#393343}
-:root[data-theme="light"] .controller-status p{color:#686373}
-:root[data-theme="dark"] .status-refresh{background:#282532;border-color:#383541;color:#eee9f8}
-:root[data-theme="dark"] .controller-status p{color:#a6a2b1}
-
 /* Compact centered hero, prototype footer */
 .hero{padding-top:12px;text-align:left}.hero-top{justify-content:flex-start;position:relative;text-align:left}.hero-top h1{margin:0;font-size:clamp(34px,7vw,54px);text-align:left}.hero-top .settings-button{position:absolute;right:0;top:0}.hero p{display:none}footer{text-align:center}
 
@@ -287,7 +267,7 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible),[role="button"]:foc
 :root[data-theme="dark"][data-monet="on"]{--mp-accent:var(--monet-primary);--mp-accent-on:var(--monet-on-primary);--mp-accent-container:var(--monet-container)}
 :root body{background:var(--mp-bg);color:var(--mp-text)}
 :root .card,:root .modal,:root .panel-card{background:var(--mp-surface);border-color:var(--mp-outline);color:var(--mp-text)}
-:root .hero p,:root .hint,:root .preview p,:root .panel-copy span,:root .controller-status p,:root .animation-setting-copy span,:root .panel-toolbar-title span,:root .about-brand span,:root .about-footer,:root .pill,:root footer{color:var(--mp-muted)}
+:root .hero p,:root .hint,:root .preview p,:root .panel-copy span,:root .animation-setting-copy span,:root .panel-toolbar-title span,:root .about-brand span,:root .about-footer,:root .pill,:root footer{color:var(--mp-muted)}
 :root .pill,:root .about-link,:root .panel-toolbar,:root .settings-divider{border-color:var(--mp-outline)}
 :root .eyebrow,:root .hero h1 em,:root .import-message{color:var(--mp-accent)}
 :root .panel-card.selected{background:var(--mp-accent-container);border-color:var(--mp-accent)}
@@ -299,7 +279,7 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible),[role="button"]:foc
 :root .add-button,:root .open-panel-button,:root .modal-actions button:not(.secondary),:root .backup-button:not(.secondary-backup){background:var(--mp-accent);border-color:var(--mp-accent);color:var(--mp-accent-on)}
 :root .secondary-backup,:root .about-button,:root .modal-actions .secondary{background:var(--mp-neutral);border-color:var(--mp-outline);color:var(--mp-neutral-on)}
 :root .remove-profile{background:var(--mp-danger-bg);color:var(--mp-danger)}
-:root .settings-button,:root .panel-toolbar-button,:root .status-refresh{background:var(--mp-surface2);border-color:var(--mp-outline);color:var(--mp-text)}
+:root .settings-button,:root .panel-toolbar-button{background:var(--mp-surface2);border-color:var(--mp-outline);color:var(--mp-text)}
 :root .modal input,:root .theme-picker-trigger,:root .input-row input{background:var(--mp-input);border-color:var(--mp-outline);color:var(--mp-text)}
 :root .modal label,:root .connection label{color:var(--mp-muted)}
 :root .theme-picker-menu{background:var(--mp-surface2);border-color:var(--mp-outline);box-shadow:var(--mp-shadow)}
@@ -359,14 +339,6 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible),[role="button"]:foc
 :root[data-animations="on"] .settings-exit-leave-to .settings-modal{opacity:0;transform:translateY(12px) scale(.96)}
 :root[data-animations="on"] .settings-exit-enter-from{opacity:0}
 :root[data-animations="on"] .settings-exit-enter-from .settings-modal{opacity:0;transform:translateY(12px) scale(.96)}
-
-/* Compact controller availability indicator inside connection cards */
-:root .controller-card-indicator{padding:0;border:0;cursor:pointer;display:block;width:12px;height:12px;flex:none;box-shadow:none}
-:root .controller-card-indicator.idle{background:var(--mp-muted);opacity:.55}
-:root .controller-card-indicator.checking{background:var(--mp-accent);animation:mp-status-pulse 1s ease-in-out infinite}
-:root .controller-card-indicator.online{background:#42b883;box-shadow:0 0 0 4px #42b88322}
-:root .controller-card-indicator.offline{background:#e26c73;box-shadow:0 0 0 4px #e26c7322}
-:root .controller-card-indicator:disabled{opacity:.5}
 
 /* Mobile viewport recovery: prevent horizontal clipping and keep connection editors above the keyboard. */
 html,body,#app{width:100%;max-width:100%;overflow-x:hidden;margin:0}
