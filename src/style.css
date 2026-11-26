@@ -407,3 +407,26 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden;margin:0}
 @media(max-width:420px){.dashboard-tile{min-height:108px}}
 
 .device-heading-row{display:flex;align-items:center;gap:8px}.device-heading-row .device-heading{flex:1;min-width:0}.device-actions{display:flex;gap:6px;padding-right:12px}.device-actions button{border:1px solid var(--outline,var(--border));background:transparent;color:inherit;border-radius:12px;width:36px;height:36px;display:grid;place-items:center;font-size:17px;cursor:pointer}.device-actions button:active{transform:scale(.96)}
+
+
+/* Main screen polish: compact tiles, quieter URL metadata and clear drag states. */
+.device-card{transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.device-heading{padding:13px 14px}
+.device-copy{gap:3px}
+.device-copy strong{font-size:15px;letter-spacing:-.015em}
+.device-copy span{font-size:11px;opacity:.72}
+.device-copy small{font-size:11px;opacity:.8}
+.device-actions{gap:5px;padding-right:10px}
+.device-actions button{width:34px;height:34px;border-radius:11px;font-size:16px}
+.device-actions .device-drag-handle{cursor:grab;touch-action:none;color:var(--mp-muted)}
+.device-actions .device-drag-handle:active{cursor:grabbing}
+.dashboard-grid{gap:8px}
+.dashboard-tile{min-height:112px;padding:12px;border-radius:15px;gap:7px}
+.dashboard-tile strong{font-size:13px;line-height:1.3}
+.dashboard-tile .tile-url{font-size:10px;opacity:.62}
+.dashboard-tile .tile-icon{font-size:20px}
+.add-dashboard-tile{min-height:56px;padding:10px 12px}
+.device-card.dragging{opacity:.58;transform:scale(.985);border-color:var(--mp-accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--mp-accent) 25%,transparent)}
+.dashboard-tile.dragging{opacity:.45;border-color:var(--mp-accent);transform:scale(.97)}
+:root[data-animations="on"] .device-card,:root[data-animations="on"] .dashboard-tile{transition:transform .2s ease,opacity .2s ease,border-color .2s ease,box-shadow .2s ease,background .18s ease}
+@media(max-width:420px){.device-heading{padding:11px 12px}.device-actions{gap:4px;padding-right:8px}.device-actions button{width:32px;height:32px}.dashboard-tile{min-height:100px;padding:10px}}
