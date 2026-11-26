@@ -278,3 +278,35 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible),[role="button"]:foc
 :root[data-theme="light"][data-monet="on"] .theme-picker-chevron{color:var(--monet-primary)}
 :root[data-theme="light"][data-monet="on"] .switch.enabled{background:var(--monet-primary);border-color:var(--monet-primary)}
 :root[data-theme="light"][data-monet="on"] .about-logo{background:var(--monet-primaryContainer);border-color:var(--monet-primary);color:var(--monet-primary)}
+
+/* Full color-role audit for every app-owned UI surface/control. */
+:root{--mp-bg:#101116;--mp-surface:#1a1921;--mp-surface2:#242130;--mp-surface3:#34313e;--mp-text:#f3f1f8;--mp-muted:#a6a2b1;--mp-outline:#383541;--mp-input:#111117;--mp-accent:var(--monet-primary);--mp-accent-on:var(--monet-on-primary);--mp-accent-container:var(--monet-container);--mp-neutral:#34313e;--mp-neutral-on:#eee9f8;--mp-danger-bg:#302b38;--mp-danger:#bdb5c9;--mp-shadow:0 20px 80px #0008}
+:root[data-theme="light"]{--mp-bg:#f5f3f8;--mp-surface:#fff;--mp-surface2:#f8f7fa;--mp-surface3:#e9e5ef;--mp-text:#24212b;--mp-muted:#686373;--mp-outline:#e2deea;--mp-input:#f8f7fa;--mp-accent:var(--monet-light-primary);--mp-accent-on:#fff;--mp-accent-container:var(--monet-light-container);--mp-neutral:#e9e5ef;--mp-neutral-on:#393343;--mp-danger-bg:#eeeaf2;--mp-danger:#665e70;--mp-shadow:0 20px 80px #241b3326}
+:root[data-theme="dark"]{color-scheme:dark}
+:root[data-theme="light"][data-monet="on"]{--mp-accent:var(--monet-primary);--mp-accent-on:#fff;--mp-accent-container:var(--monet-primaryContainer);--mp-outline:color-mix(in srgb,var(--monet-primary) 22%,#e2deea)}
+:root[data-theme="dark"][data-monet="on"]{--mp-accent:var(--monet-primary);--mp-accent-on:var(--monet-on-primary);--mp-accent-container:var(--monet-container)}
+:root body{background:var(--mp-bg);color:var(--mp-text)}
+:root .card,:root .modal,:root .panel-card{background:var(--mp-surface);border-color:var(--mp-outline);color:var(--mp-text)}
+:root .hero p,:root .hint,:root .preview p,:root .panel-copy span,:root .controller-status p,:root .animation-setting-copy span,:root .panel-toolbar-title span,:root .about-brand span,:root .about-footer,:root .pill,:root footer{color:var(--mp-muted)}
+:root .pill,:root .about-link,:root .panel-toolbar,:root .settings-divider{border-color:var(--mp-outline)}
+:root .eyebrow,:root .hero h1 em,:root .import-message{color:var(--mp-accent)}
+:root .panel-card.selected{background:var(--mp-accent-container);border-color:var(--mp-accent)}
+:root .panel-mark{background:var(--mp-surface2);border-color:var(--mp-outline);color:var(--mp-accent)}
+:root .panel-card.selected .panel-mark{background:var(--mp-accent-container);border-color:var(--mp-accent);color:var(--mp-accent)}
+:root .arrow,:root .close{color:var(--mp-muted)}
+:root .empty{color:var(--mp-muted)}
+:root .controller-status{background:var(--mp-surface);border-color:var(--mp-outline)}
+:root .add-button,:root .open-panel-button,:root .modal-actions button:not(.secondary),:root .backup-button:not(.secondary-backup){background:var(--mp-accent);border-color:var(--mp-accent);color:var(--mp-accent-on)}
+:root .secondary-backup,:root .about-button,:root .modal-actions .secondary{background:var(--mp-neutral);border-color:var(--mp-outline);color:var(--mp-neutral-on)}
+:root .remove-profile{background:var(--mp-danger-bg);color:var(--mp-danger)}
+:root .settings-button,:root .panel-toolbar-button,:root .status-refresh{background:var(--mp-surface2);border-color:var(--mp-outline);color:var(--mp-text)}
+:root .modal input,:root .theme-picker-trigger,:root .input-row input{background:var(--mp-input);border-color:var(--mp-outline);color:var(--mp-text)}
+:root .modal label,:root .connection label{color:var(--mp-muted)}
+:root .theme-picker-menu{background:var(--mp-surface2);border-color:var(--mp-outline);box-shadow:var(--mp-shadow)}
+:root .theme-picker-option{color:var(--mp-text)}
+:root .theme-picker-option:active,:root .theme-picker-option[aria-selected="true"]{background:var(--mp-accent-container);color:var(--mp-accent)}
+:root .theme-picker-check,:root .theme-picker-chevron{color:var(--mp-accent)}
+:root .switch{background:var(--mp-neutral);border-color:var(--mp-outline)}:root .switch span{background:var(--mp-neutral-on)}:root .switch.enabled{background:var(--mp-accent);border-color:var(--mp-accent)}:root .switch.enabled span{background:var(--mp-accent-on)}
+:root .about-logo{background:var(--mp-accent-container);border-color:var(--mp-outline);color:var(--mp-accent)}:root .about-link{border-color:var(--mp-outline);color:var(--mp-accent)}
+:root .modal-backdrop{background:color-mix(in srgb,var(--mp-bg) 60%,transparent)}:root .modal{box-shadow:var(--mp-shadow)}
+:root .panel-viewer{background:var(--mp-bg);color:var(--mp-text)}:root .panel-toolbar{background:var(--mp-surface);border-color:var(--mp-outline)}:root .panel-loading{background:var(--mp-surface2);color:var(--mp-text)}
