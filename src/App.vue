@@ -9,6 +9,7 @@ const theme = ref<Theme>((() => {
   try { const value = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}').theme; return ['system', 'light', 'dark'].includes(value) ? value : 'system' } catch { return 'system' }
 })())
 const showSettings = ref(false)
+const showAbout = ref(false)
 const importInput = ref<HTMLInputElement | null>(null)
 const importMessage = ref('')
 watch(theme, value => {
@@ -125,6 +126,18 @@ function removeProfile(id: number) {
         <input ref="importInput" class="file-input" type="file" accept=".json,application/json" @change="importSettings" />
         <p v-if="importMessage" class="import-message" role="status">{{ importMessage }}</p>
         <p class="hint security-note">The backup contains your saved addresses. Keep the file private if it includes internal network details.</p>
+        <div class="settings-divider"></div>
+        <button class="about-button" @click="showAbout = true">About</button>
+      </section>
+    </div>
+
+    <div v-if="showAbout" class="modal-backdrop about-backdrop" @click.self="showAbout = false">
+      <section class="modal card about-modal">
+        <div class="section-heading"><div><span class="eyebrow">APPLICATION</span><h2>About</h2></div><button class="close" aria-label="Close about" @click="showAbout = false">×</button></div>
+        <div class="about-brand"><div class="about-logo">M</div><div><strong>Mihomo MultiPanel</strong><span>Version 0.1.0</span></div></div>
+        <p class="hint about-description">A simple hub for managing Mihomo controllers and web dashboards.</p>
+        <a class="about-link" href="https://github.com/kwerty2897/mihomo-multipanel" target="_blank" rel="noreferrer">GitHub project <span>↗</span></a>
+        <p class="about-footer">Made for the Mihomo community.</p>
       </section>
     </div>
 
