@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 
-type Profile = { id: number; name: string; controller: string; panelUrl: string; host?: string; port?: string; secret?: string }
+type Profile = { id: number; name: string; controller: string; panelUrl: string; host?: string; port?: string; secret?: string; mihomoUrl?: string }
 const STORAGE_KEY = 'mihomo-multipanel-profiles-v1'
 const SETTINGS_KEY = 'mihomo-multipanel-settings-v1'
 type Theme = 'system' | 'light' | 'dark'
@@ -78,9 +78,9 @@ const name = ref('')
 const connectionUrl = ref('')
 const host = ref('')
 const port = ref('9090')
-const secret = ref('')
+const secret = ref('')\nconst mihomoUrl = ref('')
 let longPressTimer: number | null = null
-function startLongPress(profile: Profile) { cancelLongPress(); longPressTimer = window.setTimeout(() => { editingId.value = profile.id; name.value = profile.name; host.value = profile.host || (() => { try { return new URL(profile.controller).hostname } catch { return '' } })(); port.value = profile.port || (() => { try { return new URL(profile.controller).port || '9090' } catch { return '9090' } })(); secret.value = profile.secret || ''; showEdit.value = true }, 550) }
+function startLongPress(profile: Profile) { cancelLongPress(); longPressTimer = window.setTimeout(() => { editingId.value = profile.id; name.value = profile.name; host.value = profile.host || (() => { try { return new URL(profile.controller).hostname } catch { return '' } })(); port.value = profile.port || (() => { try { return new URL(profile.controller).port || '9090' } catch { return '9090' } })(); secret.value = profile.secret || ''; mihomoUrl.value = profile.mihomoUrl || ''; showEdit.value = true }, 550) }
 function cancelLongPress() { if (longPressTimer !== null) window.clearTimeout(longPressTimer); longPressTimer = null }
 function controllerFromFields() { const h = host.value.trim().replace(/^https?:\/\//, '').replace(/\/$/, ''); const pt = port.value.trim(); if (!h || !/^\d{1,5}$/.test(pt) || Number(pt) < 1 || Number(pt) > 65535) return ''; return normalizeUrl('http://' + h + ':' + pt) }
 function deriveController(value: string) { const normalized = normalizeUrl(value); if (!normalized) return ''; try { return new URL(normalized).origin } catch { return '' } }
@@ -96,7 +96,7 @@ function saveEdit() {
   const panel = 'https://metacubex.github.io/metacubexd/#/setup?http=true&hostname=' + encodeURIComponent(host.value.trim()) + '&port=' + encodeURIComponent(port.value.trim()) + '&secret=' + encodeURIComponent(secret.value)
   const index = profiles.value.findIndex(p => p.id === editingId.value)
   if (index < 0) return
-  profiles.value[index] = { ...profiles.value[index], name: name.value.trim() || controller, controller, panelUrl: panel, host: host.value.trim(), port: port.value.trim(), secret: secret.value }
+  profiles.value[index] = { ...profiles.value[index], name: name.value.trim() || controller, controller, panelUrl: panel, host: host.value.trim(), port: port.value.trim(), secret: secret.value, mihomoUrl: normalizeUrl(mihomoUrl.value) || '' }
   showEdit.value = false
   editingId.value = null
 }
@@ -104,9 +104,9 @@ function addProfile() {
   const p = normalizeUrl(connectionUrl.value)
   const c = deriveController(connectionUrl.value)
   if (!c || !p) return
-  const item: Profile = { id: Date.now(), name: name.value.trim() || c, controller: c, panelUrl: p }
+  const item: Profile = { id: Date.now(), name: name.value.trim() || c, controller: mihomoUrl.value.trim() ? (normalizeUrl(mihomoUrl.value) || c) : c, panelUrl: p, host: host.value.trim(), port: port.value.trim(), secret: secret.value, mihomoUrl: normalizeUrl(mihomoUrl.value) || '' }
   profiles.value.push(item); activeId.value = item.id
-  name.value = ''; host.value = ''; port.value = '9090'; secret.value = ''; showAdd.value = false
+  name.value = ''; host.value = ''; port.value = '9090'; secret.value = ''; mihomoUrl.value = ''; showAdd.value = false
 }
 function exportSettings() {
   const payload = { settings: { theme: theme.value, animations: animationsEnabled.value, hidePanelToolbar: hidePanelToolbar.value }, profiles: profiles.value }
@@ -283,7 +283,7 @@ window.addEventListener('android-back', handleAndroidBack)
       <section class="modal card">
         <div class="section-heading"><div><span class="eyebrow">CONNECTION</span><h2>Edit controller</h2></div><button class="close" @click="showEdit = false">×</button></div>
         <label for="edit-profile-name">Name (optional)</label><input id="edit-profile-name" v-model="name" placeholder="Home, VPS, Router…"/>
-        <label for="edit-host">Host / IP</label><input id="edit-host" v-model="host" placeholder="192.168.1.1" autocapitalize="none" spellcheck="false"/><label for="edit-port">Port</label><input id="edit-port" v-model="port" inputmode="numeric" placeholder="9090"/><label for="edit-secret">Secret (optional)</label><input id="edit-secret" v-model="secret" type="password" autocapitalize="none" spellcheck="false"/>
+        <label for="edit-host">Host / IP</label><input id="edit-host" v-model="host" placeholder="192.168.1.1" autocapitalize="none" spellcheck="false"/><label for="edit-port">Port</label><input id="edit-port" v-model="port" inputmode="numeric" placeholder="9090"/><label for="edit-secret">Secret (optional)</label><input id="edit-secret" v-model="secret" type="password" autocapitalize="none" spellcheck="false"/><label for="edit-mihomo-url">Mihomo URL (optional)</label><input id="edit-mihomo-url" v-model="mihomoUrl" placeholder="http://192.168.1.1:9090" autocapitalize="none" spellcheck="false"/><p class="hint">Use this if Mihomo is managed through another dashboard or its API is exposed at a different address.</p>
         <div class="modal-actions"><button class="secondary" @click="showEdit = false">Cancel</button><button @click="saveEdit" :disabled="!controllerFromFields()">Save</button><button class="secondary" @click="removeProfile(editingId!); showEdit = false">Delete</button></div>
       </section>
     </div>
@@ -293,7 +293,7 @@ window.addEventListener('android-back', handleAndroidBack)
         <div class="section-heading"><div><span class="eyebrow">NEW CONNECTION</span><h2>Add controller</h2></div><button class="close" @click="showAdd = false">×</button></div>
         <label for="profile-name">Name (optional)</label><input id="profile-name" v-model="name" placeholder="Home, VPS, Router…"/>
         <label for="connection-url">Dashboard / controller URL</label><input id="connection-url" :value="connectionUrl" @input="connectionUrl = ($event.target as HTMLInputElement).value.toLowerCase()" placeholder="http://192.168.1.1:9090/ui/metacubexd" autocapitalize="none" spellcheck="false"/>
-        <p class="hint">Enter the dashboard URL. The controller address is detected automatically from its origin. Input is converted to lowercase.</p>
+        <label for="add-mihomo-url">Mihomo URL (optional)</label><input id="add-mihomo-url" v-model="mihomoUrl" placeholder="http://192.168.1.1:9090" autocapitalize="none" spellcheck="false"/><p class="hint">Optional direct Mihomo API address, used for connection status checks when the dashboard is hosted elsewhere.</p><p class="hint">Enter the dashboard URL. The controller address is detected automatically from its origin.</p>
         <div class="modal-actions"><button class="secondary" @click="showAdd = false">Cancel</button><button @click="addProfile" :disabled="!controllerFromFields()">Save</button></div>
       </section>
     </div>
