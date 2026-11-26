@@ -374,3 +374,13 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden;margin:0}
 .modal-backdrop{align-items:flex-start;justify-content:center;overflow-y:auto;overscroll-behavior:contain;padding:calc(env(safe-area-inset-top,0px) + 10px) 12px calc(env(safe-area-inset-bottom,0px) + 12px)}
 .modal{width:min(100%,480px);max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 24px);margin:auto 0;overflow-y:auto;overscroll-behavior:contain}
 @media(max-height:700px){.modal{max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 16px)}}
+
+/* Dashboard template editor: keep rows and URL fields inside the settings card. */
+.template-row{display:grid!important;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:8px;width:100%;max-width:100%;overflow:hidden}
+.template-row .animation-setting-copy{min-width:0;max-width:100%;overflow:hidden}
+.template-row .animation-setting-copy span{display:block;overflow-wrap:anywhere;word-break:break-word;white-space:normal;max-width:100%}
+.template-row button{min-width:0;padding:8px 10px!important;white-space:nowrap}
+.settings-modal,.settings-modal *{min-width:0}
+.settings-modal input,.settings-modal textarea{width:100%;max-width:100%;min-width:0;display:block;box-sizing:border-box}
+.settings-modal textarea{resize:vertical;overflow-wrap:anywhere;word-break:break-word}
+@media(max-width:480px){.template-row{grid-template-columns:minmax(0,1fr) auto;row-gap:8px}.template-row button:last-child{grid-column:2}.template-row button:first-of-type{grid-column:2}.template-row .animation-setting-copy{grid-column:1 / -1}.settings-modal{padding:16px}}
