@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- MetaCubeXD-inspired mark, transparent canvas, no shadow/background -->
+  <g fill="none" stroke="#dadedf" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M256 76 405 161 405 344 256 430 107 344 107 161Z"/>
+    <path d="M107 161 256 247 405 161 M256 247 256 430"/>
+    <path d="M256 103 256 221 M145 322 235 270 M277 270 367 322"/>
+  </g>
+</svg>
