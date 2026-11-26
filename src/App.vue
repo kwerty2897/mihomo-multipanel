@@ -222,12 +222,12 @@ window.addEventListener('android-back', handleAndroidBack)
           <button class="device-heading" type="button" @click="toggleDevice(device.controller)"><div class="device-copy"><strong>{{ device.name }}</strong><span>{{ device.controller }}</span><small>{{ device.dashboards.length }} dashboard{{ device.dashboards.length === 1 ? "" : "s" }}</small></div><span class="device-chevron">{{ expandedDevices.includes(device.controller) ? "⌄" : "›" }}</span></button>
           <div v-if="expandedDevices.includes(device.controller)" class="dashboard-grid">
             <button v-for="dashboard in device.dashboards" :key="dashboard.id" class="dashboard-tile" type="button" @click="openDashboard(dashboard)"><span class="tile-icon">▦</span><strong>{{ dashboard.name }}</strong><span class="tile-url">{{ dashboard.panelUrl }}</span></button>
-            <button class="dashboard-tile add-dashboard-tile" type="button" @click="name=device.name;host=device.dashboards[0]?.host || "";port=device.dashboards[0]?.port || "9090";secret=device.dashboards[0]?.secret || "";mihomoUrl=device.dashboards[0]?.mihomoUrl || "";selectedTemplateId=panelTemplates[0]?.id || "";manualPanelUrl="";showAdd=true"><span class="tile-icon">＋</span><strong>Add dashboard</strong><span class="tile-url">Add another panel to this device</span></button>
+            <button class="dashboard-tile add-dashboard-tile" type="button" @click="prepareAddDashboard(device)"><span class="tile-icon">＋</span><strong>Add dashboard</strong><span class="tile-url">Add another panel to this device</span></button>
           </div>
         </article>
       </div>
       <div v-else class="empty">No devices yet. Add a controller and its first dashboard.</div>
-      <button class="add-button" @click="name="";host="127.0.0.1";port="9090";selectedTemplateId=panelTemplates[0]?.id || "";secret="";mihomoUrl="";manualPanelUrl="";showAdd=true"><span class="plus">＋</span> Add device</button>
+      <button class="add-button" @click="prepareAddDevice"><span class="plus">＋</span> Add device</button>
     </section>    <footer>EARLY PROTOTYPE</footer>
     </template>
 
