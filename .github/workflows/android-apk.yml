@@ -71,6 +71,7 @@ jobs:
 
               override fun onWebViewCreate(webView: android.webkit.WebView) {
                   webView.settings.domStorageEnabled = true
+                  webView.settings.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
                   webView.settings.cacheMode = android.webkit.WebSettings.LOAD_CACHE_ELSE_NETWORK
                   val manager = getSystemService(android.content.Context.CONNECTIVITY_SERVICE)
                       as android.net.ConnectivityManager
