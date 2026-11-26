@@ -69,7 +69,18 @@ jobs:
               private var cacheManager: android.net.ConnectivityManager? = null
               private var cacheCallback: android.net.ConnectivityManager.NetworkCallback? = null
 
+              private var appTheme = "system"
+
+              inner class SystemBarsBridge {
+                  @android.webkit.JavascriptInterface
+                  fun setTheme(value: String) {
+                      appTheme = if (value == "light" || value == "dark") value else "system"
+                      runOnUiThread { updateSystemBars() }
+                  }
+              }
+
               override fun onWebViewCreate(webView: android.webkit.WebView) {
+                  webView.addJavascriptInterface(SystemBarsBridge(), "AndroidSystemBars")
                   webView.settings.domStorageEnabled = true
                   webView.settings.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
                   webView.settings.cacheMode = android.webkit.WebSettings.LOAD_CACHE_ELSE_NETWORK
@@ -122,25 +133,30 @@ jobs:
 
               @Suppress("DEPRECATION")
               private fun updateSystemBars() {
-                  val darkTheme = (resources.configuration.uiMode and
+                  val systemDark = (resources.configuration.uiMode and
                       android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
                       android.content.res.Configuration.UI_MODE_NIGHT_YES
-                  window.statusBarColor = if (darkTheme) {
-                      android.graphics.Color.WHITE
-                  } else {
-                      android.graphics.Color.rgb(16, 17, 22)
+                  val darkTheme = when (appTheme) {
+                      "dark" -> true
+                      "light" -> false
+                      else -> systemDark
                   }
-                  window.navigationBarColor = android.graphics.Color.rgb(16, 17, 22)
+                  window.statusBarColor = android.graphics.Color.TRANSPARENT
+                  window.navigationBarColor = android.graphics.Color.TRANSPARENT
                   if (android.os.Build.VERSION.SDK_INT >= 29) {
                       window.isNavigationBarContrastEnforced = false
                       window.isStatusBarContrastEnforced = false
                   }
                   var flags = window.decorView.systemUiVisibility
-                  flags = flags and android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
+                  flags = flags or android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                      android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                      android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                   flags = if (darkTheme) {
-                      flags or android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                      flags and android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv() and
+                          android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
                   } else {
-                      flags and android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+                      flags or android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or
+                          android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
                   }
                   window.decorView.systemUiVisibility = flags
               }
