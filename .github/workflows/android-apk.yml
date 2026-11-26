@@ -76,6 +76,65 @@ jobs:
           if not changed:
               print("No style file found; theme splash adjustment skipped.")
           PY
+      - name: Make launch splash follow saved app theme
+        run: |
+          set -euo pipefail
+          ROOT=src-tauri/gen/android/app/src/main
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          root=Path("src-tauri/gen/android/app/src/main/res")
+          files=list((root/"values").glob("styles.xml"))+list((root/"values").glob("themes.xml"))
+          style_names=[]
+          for f in files:
+              s=f.read_text()
+              style_names += re.findall(r'<style[^>]+name="([^"]+)"[^>]*>',s)
+          base=next((n for n in style_names if "MainTheme" in n or "AppTheme" in n),None)
+          if not base:
+              base=next((n for n in style_names if "Tauri" in n),None)
+          if not base: raise SystemExit("Unable to identify generated Android app theme")
+          (root/"res"/"values").mkdir(parents=True,exist_ok=True)
+          (root/"res"/"values"/"multipanel_theme.xml").write_text(f'''<resources>
+            <color name="multipanel_splash_light">#FAFAFA</color>
+            <color name="multipanel_splash_dark">#101116</color>
+            <style name="MultiPanelSplashLight" parent="{base}">
+              <item name="android:windowBackground">@color/multipanel_splash_light</item>
+              <item name="android:windowSplashScreenBackground">@color/multipanel_splash_light</item>
+            </style>
+            <style name="MultiPanelSplashDark" parent="{base}">
+              <item name="android:windowBackground">@color/multipanel_splash_dark</item>
+              <item name="android:windowSplashScreenBackground">@color/multipanel_splash_dark</item>
+            </style>
+          </resources>''')
+          night=root/"res"/"values-night"
+          night.mkdir(exist_ok=True)
+          (night/"multipanel_theme.xml").write_text(f'''<resources>
+            <style name="MultiPanelSplashSystem" parent="{base}">
+              <item name="android:windowBackground">@color/multipanel_splash_dark</item>
+              <item name="android:windowSplashScreenBackground">@color/multipanel_splash_dark</item>
+            </style>
+          </resources>''')
+          day=root/"res"/"values"
+          (day/"multipanel_system_theme.xml").write_text(f'''<resources>
+            <style name="MultiPanelSplashSystem" parent="{base}">
+              <item name="android:windowBackground">@color/multipanel_splash_light</item>
+              <item name="android:windowSplashScreenBackground">@color/multipanel_splash_light</item>
+            </style>
+          </resources>''')
+          print("Generated splash styles based on",base)
+          PY
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=next(Path("src-tauri/gen/android/app/src/main").rglob("MainActivity.kt"))
+          s=p.read_text()
+          s=s.replace('private var appTheme = "system"', 'private var appTheme = "system"\n\n              private fun applyLaunchTheme(value: String) {\n                  when (value) {\n                      "light" -> setTheme(R.style.MultiPanelSplashLight)\n                      "dark" -> setTheme(R.style.MultiPanelSplashDark)\n                      else -> setTheme(R.style.MultiPanelSplashSystem)\n                  }\n              }')
+          s=s.replace('appTheme = if (value == "light" || value == "dark") value else "system"\n                      runOnUiThread { updateSystemBars() }', 'appTheme = if (value == "light" || value == "dark") value else "system"\n                      getSharedPreferences("multipanel_theme", android.content.Context.MODE_PRIVATE).edit().putString("theme", appTheme).apply()\n                      runOnUiThread { updateSystemBars() }')
+          s=s.replace('super.onCreate(savedInstanceState)\n                  updateSystemBars()', 'appTheme = getSharedPreferences("multipanel_theme", android.content.Context.MODE_PRIVATE).getString("theme", "system") ?: "system"\n                  applyLaunchTheme(appTheme)\n                  super.onCreate(savedInstanceState)\n                  updateSystemBars()')
+          if 'applyLaunchTheme(appTheme)' not in s: raise SystemExit("Could not patch MainActivity onCreate")
+          p.write_text(s)
+          print("Added persisted launch-theme selection to",p)
+          PY
       - name: Configure Android system navigation bar
         run: |
           set -euo pipefail
