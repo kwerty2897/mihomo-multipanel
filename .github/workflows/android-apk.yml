@@ -304,7 +304,7 @@ jobs:
           mkdir -p "$RES/drawable" "$RES/mipmap-anydpi-v26"
           cat > "$RES/values/ic_launcher_background.xml" <<'XML'
           <resources>
-            <color name="ic_launcher_background">#6750A4</color>
+            <color name="ic_launcher_background">#00000000</color>
           </resources>
           XML
           # Transparent adaptive icon: black cube with complete rear edges and white outline.
