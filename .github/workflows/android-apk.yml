@@ -218,6 +218,28 @@ jobs:
                   updateSystemBars()
               }
 
+              @Suppress("DEPRECATION")
+              override fun onBackPressed() {
+                  val webView = (this as? android.app.Activity)?.window?.decorView?.findViewById<android.view.View>(android.R.id.content)
+                  if (webView != null) {
+                      webView.post {
+                          val actualWebView = findWebView(window.decorView)
+                          actualWebView?.evaluateJavascript("window.dispatchEvent(new Event('android-back'))", null)
+                      }
+                  }
+              }
+
+              private fun findWebView(view: android.view.View): android.webkit.WebView? {
+                  if (view is android.webkit.WebView) return view
+                  if (view is android.view.ViewGroup) {
+                      for (i in 0 until view.childCount) {
+                          val found = findWebView(view.getChildAt(i))
+                          if (found != null) return found
+                      }
+                  }
+                  return null
+              }
+
               override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
                   super.onConfigurationChanged(newConfig)
                   updateSystemBars()
