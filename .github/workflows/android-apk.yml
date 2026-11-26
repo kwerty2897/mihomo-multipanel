@@ -302,6 +302,25 @@ jobs:
           done
 
           mkdir -p "$RES/drawable" "$RES/mipmap-anydpi-v26"
+          # Replace Tauri-generated legacy launcher PNGs (which may carry a baked background)
+          # with a transparent canvas and only the cube artwork.
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image, ImageDraw
+          root=Path("src-tauri/gen/android/app/src/main/res")
+          sizes={"mdpi":48,"hdpi":72,"xhdpi":96,"xxhdpi":144,"xxxhdpi":192}
+          def point(x,y): return ((x+92)*.64/512, (y+92)*.64/512)
+          vertices=[point(256,64),point(432,160),point(432,352),point(256,448),point(80,352),point(80,160)]
+          for density,size in sizes.items():
+              folder=root/f"mipmap-{density}"
+              folder.mkdir(exist_ok=True)
+              for name in ("ic_launcher.png","ic_launcher_round.png"):
+                  im=Image.new("RGBA",(size,size),(0,0,0,0)); d=ImageDraw.Draw(im)
+                  pts=[(round(x*size),round(y*size)) for x,y in vertices]
+                  d.polygon(pts,fill=(0,0,0,255))
+                  d.line(pts+[pts[0]],fill=(255,255,255,255),width=max(1,round(size*16/512)),joint="curve")
+                  im.save(folder/name)
+          PY
           cat > "$RES/values/ic_launcher_background.xml" <<'XML'
           <resources>
             <color name="ic_launcher_background">#00000000</color>
