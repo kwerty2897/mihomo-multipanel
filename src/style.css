@@ -172,3 +172,34 @@ input,textarea,select,[contenteditable="true"]{-webkit-user-select:text;user-sel
 :root[data-animations="off"] *,
 :root[data-animations="off"] *::before,
 :root[data-animations="off"] *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+
+
+/* App-native appearance picker: avoid the Android WebView select popup */
+.theme-picker{position:relative;width:100%}
+.theme-picker-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 15px;border:1px solid #3b3845;border-radius:14px;background:#111117;color:#fff;font:inherit;font-size:14px;text-align:left;cursor:pointer}
+.theme-picker-chevron{font-size:19px;color:#aaa2bb;transition:transform .18s ease}
+.theme-picker-chevron.open{transform:rotate(180deg)}
+.theme-picker-menu{position:absolute;top:calc(100% + 7px);left:0;right:0;z-index:15;padding:6px;border:1px solid #45404f;border-radius:15px;background:#211f29;box-shadow:0 12px 32px #0006}
+.theme-picker-option{width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px;border:0;border-radius:10px;background:transparent;color:#eeeaf5;font:inherit;font-size:14px;text-align:left;cursor:pointer}
+.theme-picker-option:active,.theme-picker-option[aria-selected="true"]{background:#383143}
+.theme-picker-check{color:#c4b3ff;font-weight:800}
+@media(prefers-color-scheme:light){
+ .theme-picker-trigger{border-color:#d9d4e1;background:#f8f7fa;color:#282432}
+ .theme-picker-chevron{color:#777080}
+ .theme-picker-menu{border-color:#e0dbe8;background:#fff;box-shadow:0 12px 32px #241b3326}
+ .theme-picker-option{color:#282432}
+ .theme-picker-option:active,.theme-picker-option[aria-selected="true"]{background:#f0ebf8}
+ .theme-picker-check{color:#7056a5}
+}
+:root[data-theme="light"] .theme-picker-trigger{border-color:#d9d4e1;background:#f8f7fa;color:#282432}
+:root[data-theme="light"] .theme-picker-chevron{color:#777080}
+:root[data-theme="light"] .theme-picker-menu{border-color:#e0dbe8;background:#fff;box-shadow:0 12px 32px #241b3326}
+:root[data-theme="light"] .theme-picker-option{color:#282432}
+:root[data-theme="light"] .theme-picker-option:active,:root[data-theme="light"] .theme-picker-option[aria-selected="true"]{background:#f0ebf8}
+:root[data-theme="light"] .theme-picker-check{color:#7056a5}
+:root[data-theme="dark"] .theme-picker-trigger{border-color:#3b3845;background:#111117;color:#fff}
+:root[data-theme="dark"] .theme-picker-menu{border-color:#45404f;background:#211f29}
+:root[data-theme="dark"] .theme-picker-option{color:#eeeaf5}
+:root[data-theme="dark"] .theme-picker-option:active,:root[data-theme="dark"] .theme-picker-option[aria-selected="true"]{background:#383143}
+:root[data-theme="dark"] .theme-picker-check{color:#c4b3ff}
+:root[data-animations="on"] .theme-picker-menu{animation:mp-modal-in .16s ease both}
