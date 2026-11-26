@@ -78,7 +78,8 @@ const name = ref('')
 const connectionUrl = ref('')
 const host = ref('')
 const port = ref('9090')
-const secret = ref('')\nconst mihomoUrl = ref('')
+const secret = ref('')
+const mihomoUrl = ref('')
 let longPressTimer: number | null = null
 function startLongPress(profile: Profile) { cancelLongPress(); longPressTimer = window.setTimeout(() => { editingId.value = profile.id; name.value = profile.name; host.value = profile.host || (() => { try { return new URL(profile.controller).hostname } catch { return '' } })(); port.value = profile.port || (() => { try { return new URL(profile.controller).port || '9090' } catch { return '9090' } })(); secret.value = profile.secret || ''; mihomoUrl.value = profile.mihomoUrl || ''; showEdit.value = true }, 550) }
 function cancelLongPress() { if (longPressTimer !== null) window.clearTimeout(longPressTimer); longPressTimer = null }
