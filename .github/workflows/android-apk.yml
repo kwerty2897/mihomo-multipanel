@@ -52,6 +52,29 @@ jobs:
           PY
       - name: Initialize Android project
         run: npx tauri android init
+      - name: Configure Android adaptive and themed icons
+        run: |
+          RES=src-tauri/gen/android/app/src/main/res
+          mkdir -p "$RES/drawable" "$RES/mipmap-anydpi-v26"
+          cat > "$RES/drawable/ic_launcher_foreground.xml" <<'XML'
+          <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="512" android:viewportHeight="512">
+            <path android:fillColor="#000000" android:strokeColor="#ffffff" android:strokeWidth="12" android:strokeLineJoin="round" android:pathData="M256,66 L421,157 L421,354 L256,446 L91,354 L91,157 Z"/>
+            <path android:fillColor="#00000000" android:strokeColor="#ffffff" android:strokeWidth="12" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M91,157 L256,250 L421,157 M256,250 L256,446 M256,94 L256,218 M123,336 L234,272 M278,272 L389,336"/>
+          </vector>
+          XML
+          cat > "$RES/drawable/ic_launcher_monochrome.xml" <<'XML'
+          <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="512" android:viewportHeight="512">
+            <path android:fillColor="#000000" android:pathData="M256,66 L421,157 L421,354 L256,446 L91,354 L91,157 Z"/>
+            <path android:fillColor="#00000000" android:strokeColor="#000000" android:strokeWidth="22" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M91,157 L256,250 L421,157 M256,250 L256,446 M256,94 L256,218 M123,336 L234,272 M278,272 L389,336"/>
+          </vector>
+          XML
+          cat > "$RES/mipmap-anydpi-v26/ic_launcher.xml" <<'XML'
+          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+            <background android:drawable="@android:color/transparent"/>
+            <foreground android:drawable="@drawable/ic_launcher_foreground"/>
+            <monochrome android:drawable="@drawable/ic_launcher_monochrome"/>
+          </adaptive-icon>
+          XML
       - name: Build APK
         run: npx tauri android build --apk
       - uses: actions/upload-artifact@v4
