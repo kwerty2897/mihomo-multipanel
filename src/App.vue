@@ -102,7 +102,7 @@ async function checkController() {
   controllerStatus.value = 'checking'
   controllerStatusMessage.value = ''
   try {
-    const endpoint = current.value.controller.replace(/\\/$/, '') + '/version'
+    const endpoint = current.value.controller.replace(/\/$/, '') + '/version'
     const response = await fetch(endpoint, { signal: request.signal, cache: 'no-store' })
     if (!response.ok) throw new Error('HTTP ' + response.status)
     const data = await response.json()
