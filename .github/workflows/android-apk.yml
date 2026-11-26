@@ -49,6 +49,45 @@ jobs:
         run: |
           rm -rf src-tauri/gen/android
           npx tauri android init
+      - name: Configure Android system navigation bar
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          root = Path("src-tauri/gen/android/app/src/main")
+          candidates = list(root.rglob("MainActivity.kt"))
+          if len(candidates) != 1:
+              raise SystemExit(f"Expected one MainActivity.kt, found: {candidates}")
+          path = candidates[0]
+          source = path.read_text()
+          pattern = r"class MainActivity\\s*:\\s*TauriActivity\\(\\)\\s*(?:\\{\\s*\\})?"
+          replacement = """class MainActivity : TauriActivity() {
+              override fun onCreate(savedInstanceState: android.os.Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  window.navigationBarColor = android.graphics.Color.rgb(16, 17, 22)
+                  if (android.os.Build.VERSION.SDK_INT >= 29) {
+                      window.isNavigationBarContrastEnforced = false
+                  }
+                  window.decorView.systemUiVisibility =
+                      window.decorView.systemUiVisibility and
+                      android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
+              }
+          }"""
+          updated, count = re.subn(pattern, replacement, source, count=1)
+          if count != 1:
+              raise SystemExit(f"Could not patch MainActivity declaration in {path}")
+          path.write_text(updated)
+          print(f"Configured navigation bar in {path}")
+          PY
+          MANIFEST=src-tauri/gen/android/app/src/main/AndroidManifest.xml
+          if grep -q 'android:usesCleartextTraffic=' "$MANIFEST"; then
+            sed -i 's#android:usesCleartextTraffic="[^"]*"#android:usesCleartextTraffic="true"#' "$MANIFEST"
+          else
+            sed -i 's#<application#<application android:usesCleartextTraffic="true"#' "$MANIFEST"
+          fi
+          grep -q 'android:usesCleartextTraffic="true"' "$MANIFEST"
       - name: Generate app icons from SVG
         run: npx tauri icon src-tauri/icons/icon.svg
       - name: Configure and verify Android launcher icons
