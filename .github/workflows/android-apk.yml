@@ -62,7 +62,7 @@ jobs:
               raise SystemExit(f"Expected one MainActivity.kt, found: {candidates}")
           path = candidates[0]
           source = path.read_text()
-          pattern = r"class MainActivity\\s*:\\s*TauriActivity\\(\\)\\s*(?:\\{\\s*\\})?"
+          pattern = r"class MainActivity\s*:\s*TauriActivity\(\)\s*(?:\{\s*\})?"
           replacement = """class MainActivity : TauriActivity() {
               override fun onCreate(savedInstanceState: android.os.Bundle?) {
                   super.onCreate(savedInstanceState)
