@@ -325,3 +325,9 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible),[role="button"]:foc
 :root[data-theme="light"] .add-button,
 :root[data-theme="light"] .modal-actions button:not(.secondary),
 :root[data-theme="light"] .backup-button:not(.secondary-backup){color:#000!important}
+
+
+/* Neutral button treatment for primary actions; accent color is reserved for highlights. */
+:root .add-button,:root .modal-actions button:not(.secondary),:root .backup-button:not(.secondary-backup){background:var(--mp-neutral);color:var(--mp-neutral-on);border-color:var(--mp-outline)}
+:root[data-theme="light"] .add-button,:root[data-theme="light"] .modal-actions button:not(.secondary),:root[data-theme="light"] .backup-button:not(.secondary-backup){background:var(--mp-neutral);color:var(--mp-neutral-on);border-color:var(--mp-outline)}
+:root[data-theme="dark"] .add-button,:root[data-theme="dark"] .modal-actions button:not(.secondary),:root[data-theme="dark"] .backup-button:not(.secondary-backup){background:var(--mp-neutral);color:var(--mp-neutral-on);border-color:var(--mp-outline)}
