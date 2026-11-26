@@ -57,9 +57,9 @@ function removeProfile(id: number) {
     <section id="connections" class="connection card">
       <div class="section-heading"><div><span class="eyebrow">CONTROLLERS</span><h2>Your connections</h2></div><span class="pill">{{ profiles.length }} saved</span></div>
       <div v-if="profiles.length" class="panel-list">
-        <button v-for="profile in profiles" :key="profile.id" class="panel-card" :class="{selected: activeId === profile.id}" @click="activeId = profile.id">
+        <div v-for="profile in profiles" :key="profile.id" class="panel-card" :class="{selected: activeId === profile.id}" role="button" tabindex="0" @click="activeId = profile.id" @keydown.enter="activeId = profile.id">
           <div class="panel-mark">M</div><div class="panel-copy"><strong>{{ profile.name }}</strong><span>{{ profile.controller }}</span><span class="hint">{{ profile.panelUrl }}</span></div><button class="remove-profile" aria-label="Remove connection" @click.stop="removeProfile(profile.id)">×</button><div class="arrow">›</div>
-        </button>
+        </div>
       </div>
       <div v-else class="empty">No saved connections yet. Add your Mihomo controller and dashboard URL.</div>
       <button class="add-button" @click="showAdd = true"><span class="plus">＋</span> Add connection</button>
