@@ -521,3 +521,10 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden;margin:0}
  .device-hub .add-button{margin-top:10px;padding:12px;border-radius:13px}
  footer{display:none}
 }
+
+/* Compact grouped dashboard cards: uniform grid for two or more panels */
+.dashboard-grid:not(.dashboard-count-1) .dashboard-tile{grid-column:auto!important;min-height:86px;padding:10px;gap:6px;}
+.dashboard-grid:not(.dashboard-count-1) .dashboard-tile .tile-url{display:none;}
+.dashboard-grid:not(.dashboard-count-1) .dashboard-tile .tile-icon-wrap{gap:6px;}
+.dashboard-grid:not(.dashboard-count-1) .dashboard-tile strong{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+@media(max-width:420px){.dashboard-grid:not(.dashboard-count-1) .dashboard-tile{min-height:78px;padding:8px;gap:5px;}}
