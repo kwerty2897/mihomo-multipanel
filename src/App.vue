@@ -81,7 +81,6 @@ const showAdd = ref(false)
 const showEdit = ref(false)
 const editingId = ref<number | null>(null)
 const name = ref('')
-const connectionUrl = ref('')
 const host = ref('')
 const port = ref('9090')
 const secret = ref('')
@@ -145,7 +144,7 @@ function addProfile() {
   if (!c || !p) return
   const parsed = (() => { try { return new URL(c) } catch { return null } })(); const item: Profile = { id: Date.now(), name: name.value.trim() || c, controller: normalizeUrl(mihomoUrl.value) || c, panelUrl: p, panelTemplateId: selected?.id || '', host: host.value.trim() || parsed?.hostname || '', port: port.value.trim() || parsed?.port || '9090', secret: secret.value, mihomoUrl: normalizeUrl(mihomoUrl.value) || '' }
   profiles.value.push(item); activeId.value = item.id
-  name.value = ''; host.value = ''; port.value = '9090'; secret.value = ''; mihomoUrl.value = ''; manualPanelUrl.value = ''; selectedTemplateId.value = ''; connectionUrl.value = ''; showAdd.value = false
+  name.value = ''; host.value = ''; port.value = '9090'; secret.value = ''; mihomoUrl.value = ''; manualPanelUrl.value = ''; selectedTemplateId.value = ''; showAdd.value = false
 }
 function exportSettings() {
   const payload = { settings: { theme: theme.value, animations: animationsEnabled.value, hidePanelToolbar: hidePanelToolbar.value, panelTemplates: panelTemplates.value }, profiles: profiles.value }
@@ -187,11 +186,6 @@ async function importSettings(event: Event) {
   finally { input.value = '' }
 }
 
-function openPanel() {
-  if (!current.value) return
-  panelLoading.value = true
-  panelOpen.value = true
-}
 function closePanel() { panelOpen.value = false; panelLoading.value = false }
 function reloadPanel() {
   if (!current.value) return
