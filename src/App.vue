@@ -239,7 +239,7 @@ window.addEventListener('android-back', handleAndroidBack)
       <div class="hero-top"><h1><em>{{ greeting }}</em></h1><button class="settings-button" aria-label="Settings" title="Settings" @click="showSettings = true">⚙</button></div>
     </section>
     <section id="connections" class="connection card device-hub">
-      <div class="section-heading"><div><span class="eyebrow">DEVICES</span><h2>Your devices</h2></div><span class="pill">{{ devices.length }} saved</span></div>
+      <div class="section-heading"><div><span class="eyebrow">DEVICES</span><h2>Your devices</h2></div></div>
       <div v-if="showDeviceSearch" class="device-search"><span class="device-search-icon">⌕</span><input v-model="deviceSearch" type="search" aria-label="Search devices and dashboards" placeholder="Search devices or dashboards"/><button v-if="deviceSearch" type="button" aria-label="Clear search" @click="deviceSearch = ''">×</button></div>
       <div v-if="devices.length && deviceSearch && !filteredDevices.length" class="search-empty"><strong>No matches</strong><span>Try another device or dashboard name.</span></div>
       <div v-if="devices.length" class="device-list">
@@ -256,7 +256,7 @@ window.addEventListener('android-back', handleAndroidBack)
         </article>
       </div>
       <div v-else class="empty-state"><div class="empty-state-icon"><span>◇</span><span>⌁</span><span>▦</span></div><h3>Nothing connected yet</h3><p>Add your first Mihomo device to keep its dashboards together in one place.</p><button class="add-button empty-add-button" @click="prepareAddDevice"><span class="plus">＋</span> Add your first device</button></div>
-      <button class="add-button" @click="prepareAddDevice"><span class="plus">＋</span> Add device</button>
+      <button v-if="devices.length" class="add-button" @click="prepareAddDevice"><span class="plus">＋</span> Add device</button>
     </section>    <footer>EARLY PROTOTYPE</footer>
     </template>
 
