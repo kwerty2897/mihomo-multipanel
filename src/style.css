@@ -486,3 +486,5 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden;margin:0}
 
 /* Use more of the narrow mobile viewport and reduce wasted spacing. */
 @media(max-width:600px){.shell{padding:calc(12px + env(safe-area-inset-top)) 12px calc(18px + env(safe-area-inset-bottom))}.hero{padding:12px 2px 16px}.hero h1{font-size:clamp(30px,6vw,42px);margin:8px 0}.device-hub{padding:16px;border-radius:22px}.device-hub .section-heading{margin-bottom:12px}.device-list{gap:10px}.device-card{border-radius:16px}.device-dashboards{padding:0 10px 10px}.add-dashboard-tile{width:calc(100% - 20px);margin:0 10px 10px}.dashboard-tile{min-height:92px;padding:10px}.device-heading-row .device-heading{padding:10px}.device-actions{padding-right:8px}footer{margin-top:24px}}
+
+.live-template-url{margin:8px 0 12px;padding:10px 12px;border:1px solid var(--mp-outline);border-radius:12px;background:var(--mp-surface2);overflow-wrap:anywhere;word-break:break-word;font-size:11px;line-height:1.5}
