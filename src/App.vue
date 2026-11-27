@@ -96,6 +96,18 @@ function controllerFromFields() { const h = host.value.trim().replace(/^https?:\
 function deriveController(value: string) { const normalized = normalizeUrl(value); if (!normalized) return ''; try { return new URL(normalized).origin } catch { return '' } }
 const current = computed(() => profiles.value.find(p => p.id === activeId.value) ?? null)
 const devices = computed(() => { const groups = new Map<string, Profile[]>(); for (const p of profiles.value) { const key = p.controller; if (!groups.has(key)) groups.set(key, []); groups.get(key)!.push(p) } return Array.from(groups.entries()).map(([controller, dashboards]) => ({ controller, name: dashboards[0]?.deviceName || dashboards[0]?.name || controller, dashboards })) })
+const deviceSearch = ref('')
+const searchableItemCount = computed(() => devices.value.reduce((n, d) => n + d.dashboards.length, 0))
+const showDeviceSearch = computed(() => devices.value.length >= 3 || searchableItemCount.value >= 6)
+const filteredDevices = computed(() => {
+  const q = deviceSearch.value.trim().toLowerCase()
+  if (!q) return devices.value
+  return devices.value.flatMap(device => {
+    const deviceMatch = [device.name, device.controller].some(value => value.toLowerCase().includes(q))
+    const dashboards = deviceMatch ? device.dashboards : device.dashboards.filter(d => d.name.toLowerCase().includes(q) || d.panelUrl.toLowerCase().includes(q))
+    return dashboards.length ? [{ ...device, dashboards }] : []
+  })
+})
 const expandedDevices = ref<string[]>(devices.value.map(d => d.controller))
 const draggedDeviceController = ref<string | null>(null)
 function dragDeviceStart(controller:string,event:DragEvent) { draggedDeviceController.value=controller; if(event.dataTransfer){event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('text/plain',controller)} }
@@ -229,8 +241,10 @@ window.addEventListener('android-back', handleAndroidBack)
     </section>
     <section id="connections" class="connection card device-hub">
       <div class="section-heading"><div><span class="eyebrow">DEVICES</span><h2>Your devices</h2></div><span class="pill">{{ devices.length }} saved</span></div>
+      <div v-if="showDeviceSearch" class="device-search"><span class="device-search-icon">⌕</span><input v-model="deviceSearch" type="search" aria-label="Search devices and dashboards" placeholder="Search devices or dashboards"/><button v-if="deviceSearch" type="button" aria-label="Clear search" @click="deviceSearch = ''">×</button></div>
+      <div v-if="devices.length && deviceSearch && !filteredDevices.length" class="search-empty"><strong>No matches</strong><span>Try another device or dashboard name.</span></div>
       <div v-if="devices.length" class="device-list">
-        <article v-for="device in devices" :key="device.controller" :class="{ dragging: draggedDeviceController === device.controller }" class="device-card" @dragover="dragDeviceOver" @drop="dropDevice(device.controller, $event)">
+        <article v-for="device in filteredDevices" :key="device.controller" :class="{ dragging: draggedDeviceController === device.controller }" class="device-card" @dragover="dragDeviceOver" @drop="dropDevice(device.controller, $event)">
           <div class="device-heading-row"><button class="device-heading" type="button" :aria-expanded="expandedDevices.includes(device.controller)" @click="toggleDevice(device.controller)"><div class="device-copy"><strong>{{ device.name }}</strong><span>{{ device.controller }}</span><small>{{ device.dashboards.length }} dashboard{{ device.dashboards.length === 1 ? "" : "s" }}</small></div><span class="device-chevron">{{ expandedDevices.includes(device.controller) ? "⌄" : "›" }}</span></button><div class="device-actions"><button type="button" class="device-drag-handle" draggable="true" aria-label="Move device" title="Drag to reorder" @dragstart="dragDeviceStart(device.controller, $event)" @dragend="endDeviceDrag">⠿</button><button type="button" aria-label="Rename device" title="Rename device" @click="prepareEditDevice(device)">✎</button><button type="button" aria-label="Delete device" title="Delete device" @click="deleteDevice(device.controller)">⌫</button></div></div>
           <Transition name="device-expand">
           <div v-if="expandedDevices.includes(device.controller)" class="device-dashboards">
