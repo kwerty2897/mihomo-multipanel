@@ -476,3 +476,8 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden;margin:0}
 .search-empty span{font-size:12px;opacity:.8}
 :root[data-theme="light"] .device-search{border-color:#ddd7e7;background:#f8f7fa}
 :root[data-theme="dark"] .device-search{border-color:#494158;background:#1a1921}
+
+
+/* Device last-opened metadata */
+.device-copy small{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+.device-last-opened{font-size:11px;opacity:.7;font-weight:400}
