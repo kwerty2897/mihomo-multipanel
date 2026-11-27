@@ -13,6 +13,7 @@ const savedSettings = (() => {
 const theme = ref<Theme>(['system', 'light', 'dark'].includes(savedSettings.theme) ? savedSettings.theme : 'system')
 const animationsEnabled = ref(savedSettings.animations !== false)
 const hidePanelToolbar = ref(savedSettings.hidePanelToolbar === true)
+const historyEnabled = ref(savedSettings.historyEnabled !== false)
 const panelTemplates = ref<PanelTemplate[]>(Array.isArray(savedSettings.panelTemplates) && savedSettings.panelTemplates.length ? savedSettings.panelTemplates : DEFAULT_TEMPLATES)
 const selectedTemplateId = ref('')
 const templatePickerOpen = ref(false)
@@ -20,7 +21,8 @@ const revealSecret = ref(false)
 const templateName = ref('')
 const templateUrl = ref('')
 const editingTemplateId = ref('')
-watch([hidePanelToolbar, panelTemplates], ([value, templates]) => { try { const current = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...current, hidePanelToolbar: value, panelTemplates: templates })) } catch { /* storage may be unavailable */ } }, { deep: true })
+watch([hidePanelToolbar, panelTemplates, historyEnabled], ([value, templates, history]) => { try { const current = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...current, hidePanelToolbar: value, panelTemplates: templates, historyEnabled: history })) } catch { /* storage may be unavailable */ } }, { deep: true })
+watch(historyEnabled, enabled => { if (!enabled) profiles.value = profiles.value.map(p => ({ ...p, lastOpenedAt: undefined })) })
 const panelOpen = ref(false)
 const panelLoading = ref(false)
 const showSettings = ref(false)
@@ -37,7 +39,7 @@ const greeting = computed(() => { const hour = new Date().getHours(); return hou
 const importInput = ref<HTMLInputElement | null>(null)
 const importMessage = ref('')
 watch([theme, animationsEnabled], ([themeValue, animationsValue]) => {
-  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ theme: themeValue, animations: animationsValue, hidePanelToolbar: hidePanelToolbar.value, panelTemplates: panelTemplates.value })) } catch { /* storage may be unavailable */ }
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ theme: themeValue, animations: animationsValue, hidePanelToolbar: hidePanelToolbar.value, panelTemplates: panelTemplates.value, historyEnabled: historyEnabled.value })) } catch { /* storage may be unavailable */ }
   const root = document.documentElement
   root.setAttribute('data-theme', themeValue === 'system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : themeValue)
   root.setAttribute('data-animations', animationsValue ? 'on' : 'off')
@@ -128,7 +130,7 @@ const deviceEditName = ref('')
 function prepareEditDevice(device: {controller:string;name:string}) { editingDeviceController.value=device.controller; deviceEditName.value=device.name; showDeviceEdit.value=true }
 function saveDeviceName() { const n=deviceEditName.value.trim(); if(!n) return; profiles.value=profiles.value.map(p=>p.controller===editingDeviceController.value?{...p,deviceName:n}:p); showDeviceEdit.value=false }
 function deleteDevice(controller:string) { if(!window.confirm('Delete this device and all its dashboards?')) return; const removed=profiles.value.filter(p=>p.controller===controller); profiles.value=profiles.value.filter(p=>p.controller!==controller); if(removed.some(p=>p.id===activeId.value)){closePanel();activeId.value=profiles.value[0]?.id??null} expandedDevices.value=expandedDevices.value.filter(x=>x!==controller) }
-function openDashboard(profile: Profile) { const openedAt = Date.now(); profiles.value = profiles.value.map(p => p.id === profile.id ? { ...p, lastOpenedAt: openedAt } : p); activeId.value = profile.id; panelLoading.value = true; panelOpen.value = true }\nfunction formatLastOpened(timestamp?: number) { if (!timestamp || !Number.isFinite(timestamp)) return ''; const elapsed = Math.max(0, Date.now() - timestamp); const minute = 60_000, hour = 60 * minute, day = 24 * hour; if (elapsed < minute) return 'Opened just now'; if (elapsed < hour) return 'Opened ' + Math.floor(elapsed / minute) + ' min ago'; if (elapsed < day) return 'Opened ' + Math.floor(elapsed / hour) + ' h ago'; if (elapsed < 7 * day) return 'Opened ' + Math.floor(elapsed / day) + ' d ago'; return 'Last opened ' + new Date(timestamp).toLocaleDateString() }
+function openDashboard(profile: Profile) { if (historyEnabled.value) { const openedAt = Date.now(); profiles.value = profiles.value.map(p => p.id === profile.id ? { ...p, lastOpenedAt: openedAt } : p) }; activeId.value = profile.id; panelLoading.value = true; panelOpen.value = true }\nfunction formatLastOpened(timestamp?: number) { if (!timestamp || !Number.isFinite(timestamp)) return ''; const elapsed = Math.max(0, Date.now() - timestamp); const minute = 60_000, hour = 60 * minute, day = 24 * hour; if (elapsed < minute) return 'Opened just now'; if (elapsed < hour) return 'Opened ' + Math.floor(elapsed / minute) + ' min ago'; if (elapsed < day) return 'Opened ' + Math.floor(elapsed / hour) + ' h ago'; if (elapsed < 7 * day) return 'Opened ' + Math.floor(elapsed / day) + ' d ago'; return 'Last opened ' + new Date(timestamp).toLocaleDateString() }
 function prepareAddDevice() { name.value = ""; host.value = "127.0.0.1"; port.value = "9090"; selectedTemplateId.value = panelTemplates.value[0]?.id || ""; secret.value = ""; mihomoUrl.value = ""; manualPanelUrl.value = ""; showAdd.value = true }
 function prepareAddDashboard(device: { name: string; dashboards: Profile[] }) { name.value = device.name; host.value = device.dashboards[0]?.host || ""; port.value = device.dashboards[0]?.port || "9090"; secret.value = device.dashboards[0]?.secret || ""; mihomoUrl.value = device.dashboards[0]?.mihomoUrl || ""; selectedTemplateId.value = panelTemplates.value[0]?.id || ""; manualPanelUrl.value = ""; showAdd.value = true }
 
@@ -159,7 +161,7 @@ function addProfile() {
   name.value = ''; host.value = ''; port.value = '9090'; secret.value = ''; mihomoUrl.value = ''; manualPanelUrl.value = ''; selectedTemplateId.value = ''; showAdd.value = false
 }
 function exportSettings() {
-  const payload = { settings: { theme: theme.value, animations: animationsEnabled.value, hidePanelToolbar: hidePanelToolbar.value, panelTemplates: panelTemplates.value }, profiles: profiles.value }
+  const payload = { settings: { theme: theme.value, animations: animationsEnabled.value, hidePanelToolbar: hidePanelToolbar.value, historyEnabled: historyEnabled.value, panelTemplates: panelTemplates.value }, profiles: profiles.value }
   const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))))
   const backup = { app: 'mihomo-multipanel', version: 2, exportedAt: new Date().toISOString(), secret: encoded }
   const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' })
@@ -175,7 +177,7 @@ async function importSettings(event: Event) {
   try {
     const data: unknown = JSON.parse(await file.text())
     if (!data || typeof data !== 'object') throw new Error('Invalid backup file.')
-    const outer = data as { app?: unknown; version?: unknown; profiles?: unknown; settings?: { theme?: unknown; animations?: unknown; hidePanelToolbar?: unknown; panelTemplates?: unknown }; secret?: unknown }
+    const outer = data as { app?: unknown; version?: unknown; profiles?: unknown; settings?: { theme?: unknown; animations?: unknown; hidePanelToolbar?: unknown; historyEnabled?: unknown; panelTemplates?: unknown }; secret?: unknown }
     if (outer.app !== 'mihomo-multipanel') throw new Error('Unsupported backup format.')
     let backup: { profiles?: unknown; settings?: { theme?: unknown; animations?: unknown; hidePanelToolbar?: unknown; panelTemplates?: unknown } }
     if (outer.version === 1) backup = outer
@@ -192,6 +194,7 @@ async function importSettings(event: Event) {
     theme.value = ['system', 'light', 'dark'].includes(String(importedTheme)) ? importedTheme as Theme : 'system'
     animationsEnabled.value = backup.settings?.animations !== false
     hidePanelToolbar.value = backup.settings?.hidePanelToolbar === true
+    historyEnabled.value = backup.settings?.historyEnabled !== false
     panelTemplates.value = Array.isArray(backup.settings?.panelTemplates) && backup.settings!.panelTemplates!.length ? backup.settings!.panelTemplates as PanelTemplate[] : DEFAULT_TEMPLATES
     importMessage.value = 'Backup imported successfully.'
   } catch (error) { importMessage.value = error instanceof Error ? error.message : 'Could not import backup.' }
@@ -245,7 +248,7 @@ window.addEventListener('android-back', handleAndroidBack)
       <div v-if="devices.length && deviceSearch && !filteredDevices.length" class="search-empty"><strong>No matches</strong><span>Try another device or dashboard name.</span></div>
       <div v-if="devices.length" class="device-list">
         <article v-for="device in filteredDevices" :key="device.controller" :class="{ dragging: draggedDeviceController === device.controller }" class="device-card" @dragover="dragDeviceOver" @drop="dropDevice(device.controller, $event)">
-          <div class="device-heading-row"><button class="device-heading" type="button" :aria-expanded="expandedDevices.includes(device.controller)" @click="toggleDevice(device.controller)"><div class="device-copy"><strong>{{ device.name }}</strong><span>{{ device.controller }}</span><small>{{ device.dashboards.length }} dashboard{{ device.dashboards.length === 1 ? "" : "s" }}<span v-if="device.dashboards.some(d => d.lastOpenedAt)" class="device-last-opened">{{ formatLastOpened(Math.max(...device.dashboards.map(d => d.lastOpenedAt || 0))) }}</span></small></div><span class="device-chevron">{{ expandedDevices.includes(device.controller) ? "⌄" : "›" }}</span></button><div class="device-actions"><button type="button" class="device-drag-handle" draggable="true" aria-label="Move device" title="Drag to reorder" @dragstart="dragDeviceStart(device.controller, $event)" @dragend="endDeviceDrag">⠿</button><button type="button" aria-label="Rename device" title="Rename device" @click="prepareEditDevice(device)">✎</button><button type="button" aria-label="Delete device" title="Delete device" @click="deleteDevice(device.controller)">⌫</button></div></div>
+          <div class="device-heading-row"><button class="device-heading" type="button" :aria-expanded="expandedDevices.includes(device.controller)" @click="toggleDevice(device.controller)"><div class="device-copy"><strong>{{ device.name }}</strong><span>{{ device.controller }}</span><small>{{ device.dashboards.length }} dashboard{{ device.dashboards.length === 1 ? "" : "s" }}<span v-if="historyEnabled && device.dashboards.some(d => d.lastOpenedAt)" class="device-last-opened">{{ formatLastOpened(Math.max(...device.dashboards.map(d => d.lastOpenedAt || 0))) }}</span></small></div><span class="device-chevron">{{ expandedDevices.includes(device.controller) ? "⌄" : "›" }}</span></button><div class="device-actions"><button type="button" class="device-drag-handle" draggable="true" aria-label="Move device" title="Drag to reorder" @dragstart="dragDeviceStart(device.controller, $event)" @dragend="endDeviceDrag">⠿</button><button type="button" aria-label="Rename device" title="Rename device" @click="prepareEditDevice(device)">✎</button><button type="button" aria-label="Delete device" title="Delete device" @click="deleteDevice(device.controller)">⌫</button></div></div>
           <Transition name="device-expand">
           <div v-if="expandedDevices.includes(device.controller)" class="device-dashboards">
             <div class="dashboard-grid" :class="'dashboard-count-' + device.dashboards.length">
@@ -286,7 +289,7 @@ window.addEventListener('android-back', handleAndroidBack)
           <button class="switch" type="button" role="switch" :aria-checked="hidePanelToolbar" :class="{ enabled: hidePanelToolbar }" @click="hidePanelToolbar = !hidePanelToolbar"><span></span></button>
         </div>
         <div class="settings-divider"></div>
-        <button class="settings-subsection" type="button" @click="showTemplateSettings = true"><div class="settings-subsection-copy"><strong>Dashboard templates</strong><span>Manage templates and URL placeholders</span></div><span class="settings-subsection-arrow">›</span></button>
+        <div class="animation-setting"><div class="animation-setting-copy"><strong>Dashboard history</strong><span>Remember when dashboards were last opened. Turning this off clears saved history.</span></div><button class="switch" type="button" role="switch" :aria-checked="historyEnabled" :class="{ enabled: historyEnabled }" @click="historyEnabled = !historyEnabled"><span></span></button></div><div class="settings-divider"></div><button class="settings-subsection" type="button" @click="showTemplateSettings = true"><div class="settings-subsection-copy"><strong>Dashboard templates</strong><span>Manage templates and URL placeholders</span></div><span class="settings-subsection-arrow">›</span></button>
         <div class="settings-divider"></div>
         <div class="backup-title">Backup & restore</div>
         <p class="hint">Export or restore all saved controller connections, panel URLs and appearance settings in one JSON file.</p>
