@@ -426,7 +426,7 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden;margin:0}
 .dashboard-tile .tile-url{font-size:10px;opacity:.62}
 .dashboard-tile .tile-icon{font-size:20px}
 .add-dashboard-tile{min-height:56px;padding:10px 12px}
-.device-card.dragging{opacity:.58;transform:scale(.985);border-color:var(--mp-accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--mp-accent) 25%,transparent)}
+
 .dashboard-tile.dragging{opacity:.45;border-color:var(--mp-accent);transform:scale(.97)}
 :root[data-animations="on"] .device-card,:root[data-animations="on"] .dashboard-tile{transition:transform .2s ease,opacity .2s ease,border-color .2s ease,box-shadow .2s ease,background .18s ease}
 @media(max-width:420px){.device-heading{padding:11px 12px}.device-actions{gap:4px;padding-right:8px}.device-actions button{width:32px;height:32px}.dashboard-tile{min-height:100px;padding:10px}}
