@@ -89,9 +89,6 @@ const secret = ref('')
 const mihomoUrl = ref('')
 const manualPanelUrl = ref('')
 const editTemplatePickerOpen = ref(false)
-let longPressTimer: number | null = null
-function startLongPress(profile: Profile) { cancelLongPress(); longPressTimer = window.setTimeout(() => { editingId.value = profile.id; name.value = profile.name; host.value = profile.host || (() => { try { return new URL(profile.controller).hostname } catch { return '' } })(); port.value = profile.port || (() => { try { return new URL(profile.controller).port || '9090' } catch { return '9090' } })(); secret.value = profile.secret || ''; mihomoUrl.value = profile.mihomoUrl || ''; selectedTemplateId.value = profile.panelTemplateId || ''; manualPanelUrl.value = profile.panelTemplateId ? '' : profile.panelUrl; revealSecret.value = false; showEdit.value = true }, 550) }
-function cancelLongPress() { if (longPressTimer !== null) window.clearTimeout(longPressTimer); longPressTimer = null }
 function scrollInputIntoView(event: FocusEvent) { window.setTimeout(() => (event.target as HTMLElement)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 250) }
 function renderTemplate(template: string) { return template.replace(/%host/g, encodeURIComponent(host.value.trim())).replace(/%port/g, encodeURIComponent(port.value.trim())).replace(/%secret/g, encodeURIComponent(secret.value)) }
 function controllerFromFields() { const h = host.value.trim().replace(/^https?:\/\//, '').replace(/\/$/, ''); const pt = port.value.trim(); if (!h || !/^\d{1,5}$/.test(pt) || Number(pt) < 1 || Number(pt) > 65535) return ''; return normalizeUrl('http://' + h + ':' + pt) }
@@ -253,7 +250,7 @@ window.addEventListener('android-back', handleAndroidBack)
           <Transition name="device-expand">
           <div v-if="expandedDevices.includes(device.controller)" class="device-dashboards">
             <div class="dashboard-grid" :class="'dashboard-count-' + device.dashboards.length">
-              <button v-for="dashboard in device.dashboards" :key="dashboard.id" :class="{ dragging: draggedDashboardId === dashboard.id }" class="dashboard-tile" type="button" draggable="true" :aria-label="'Open ' + dashboard.name + ' dashboard'" @dragstart="dragDashboardStart(dashboard.id, $event)" @dragover="dragDashboardOver" @drop="dropDashboard(dashboard, $event)" @dragend="endDashboardDrag" @click="openDashboard(dashboard)" @touchstart="startLongPress(dashboard)" @touchend="cancelLongPress" @touchmove="cancelLongPress" @mousedown="startLongPress(dashboard)" @mouseup="cancelLongPress" @mouseleave="cancelLongPress"><span class="tile-icon-wrap"><span class="tile-icon">▦</span><span class="tile-open-indicator">↗</span></span><strong>{{ dashboard.name }}</strong><span class="tile-url">{{ dashboard.panelUrl }}</span></button>
+              <button v-for="dashboard in device.dashboards" :key="dashboard.id" :class="{ dragging: draggedDashboardId === dashboard.id }" class="dashboard-tile" type="button" draggable="true" :aria-label="'Open ' + dashboard.name + ' dashboard'" @dragstart="dragDashboardStart(dashboard.id, $event)" @dragover="dragDashboardOver" @drop="dropDashboard(dashboard, $event)" @dragend="endDashboardDrag" @click="openDashboard(dashboard)"><span class="tile-icon-wrap"><span class="tile-icon">▦</span><span class="tile-open-indicator">↗</span></span><strong>{{ dashboard.name }}</strong><span class="tile-url">{{ dashboard.panelUrl }}</span></button>
             </div>
             <button class="dashboard-tile add-dashboard-tile" type="button" @click="prepareAddDashboard(device)"><span class="tile-icon">＋</span><strong>Add dashboard</strong><span class="tile-url">Add another panel to this device</span></button>
           </div>
