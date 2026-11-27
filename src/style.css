@@ -488,3 +488,36 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden;margin:0}
 @media(max-width:600px){.shell{padding:calc(12px + env(safe-area-inset-top)) 12px calc(18px + env(safe-area-inset-bottom))}.hero{padding:12px 2px 16px}.hero h1{font-size:clamp(30px,6vw,42px);margin:8px 0}.device-hub{padding:16px;border-radius:22px}.device-hub .section-heading{margin-bottom:12px}.device-list{gap:10px}.device-card{border-radius:16px}.device-dashboards{padding:0 10px 10px}.add-dashboard-tile{width:calc(100% - 20px);margin:0 10px 10px}.dashboard-tile{min-height:92px;padding:10px}.device-heading-row .device-heading{padding:10px}.device-actions{padding-right:8px}footer{margin-top:24px}}
 
 .live-template-url{margin:8px 0 12px;padding:10px 12px;border:1px solid var(--mp-outline);border-radius:12px;background:var(--mp-surface2);overflow-wrap:anywhere;word-break:break-word;font-size:11px;line-height:1.5}
+
+/* Extra compact mobile home layout */
+@media(max-width:600px){
+ .shell{max-width:none;padding:calc(8px + env(safe-area-inset-top)) 8px calc(12px + env(safe-area-inset-bottom))}
+ .hero{padding:4px 4px 12px}
+ .hero-top{gap:8px;min-height:44px}
+ .hero h1{font-size:clamp(26px,6vw,34px);line-height:1;margin:0;letter-spacing:-.045em}
+ .settings-button{width:36px;height:36px;border-radius:12px;font-size:19px}
+ .device-hub{padding:12px;border-radius:20px}
+ .device-hub .section-heading{gap:6px;margin-bottom:8px}
+ .device-hub .section-heading h2{font-size:17px;margin:4px 0 0}
+ .device-hub .eyebrow{font-size:9px;letter-spacing:.14em}
+ .device-hub .pill{font-size:10px;padding:5px 8px}
+ .device-search{min-height:40px;border-radius:12px;margin-bottom:10px;padding:0 10px}
+ .device-search input{font-size:13px!important}
+ .device-card{border-radius:15px}
+ .device-heading-row{gap:4px}
+ .device-heading-row .device-heading{padding:8px 10px}
+ .device-copy strong{font-size:14px}
+ .device-copy span,.device-copy small{font-size:10px}
+ .device-actions{gap:3px;padding-right:6px}
+ .device-actions button{width:30px;height:30px;border-radius:9px;font-size:14px}
+ .device-dashboards{padding:0 6px 8px}
+ .dashboard-grid{gap:6px}
+ .dashboard-tile{min-height:84px;padding:8px;border-radius:12px;gap:5px}
+ .dashboard-tile strong{font-size:12px}
+ .dashboard-tile .tile-url{font-size:9px}
+ .tile-icon-wrap .tile-icon{width:30px;height:30px;border-radius:9px;font-size:17px}
+ .add-dashboard-tile{min-height:44px;padding:8px}
+ .add-dashboard-tile .tile-icon{font-size:18px}
+ .device-hub .add-button{margin-top:10px;padding:12px;border-radius:13px}
+ footer{display:none}
+}
