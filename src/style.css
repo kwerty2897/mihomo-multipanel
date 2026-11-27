@@ -464,3 +464,15 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden;margin:0}
 :root[data-animations="on"] .dashboard-tile:not(.add-dashboard-tile):active{transform:scale(.98);}
 @media(max-width:420px){.tile-icon-wrap .tile-icon{width:34px;height:34px;border-radius:11px;}}
 @media(prefers-reduced-motion:reduce){.dashboard-tile{transition:none!important;}}
+
+
+/* Device and dashboard search */
+.device-search{display:flex;align-items:center;gap:10px;margin:0 0 16px;padding:0 14px;min-height:48px;border:1px solid var(--monet-outline,#494158);border-radius:16px;background:rgba(127,115,150,.08)}
+.device-search-icon{font-size:22px;color:var(--monet-primary);flex:none}
+.device-search input{flex:1;min-width:0;border:0!important;outline:none!important;background:transparent!important;color:inherit!important;font:inherit!important;font-size:14px!important;padding:12px 0!important;margin:0!important;box-shadow:none!important}
+.device-search input::placeholder{color:inherit;opacity:.55}
+.device-search button{border:0;background:transparent;color:inherit;font-size:23px;padding:4px 0 4px 8px;cursor:pointer;opacity:.7}
+.search-empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:24px 12px;color:inherit;opacity:.75;font-size:13px}
+.search-empty span{font-size:12px;opacity:.8}
+:root[data-theme="light"] .device-search{border-color:#ddd7e7;background:#f8f7fa}
+:root[data-theme="dark"] .device-search{border-color:#494158;background:#1a1921}
