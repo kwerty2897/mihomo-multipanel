@@ -238,15 +238,17 @@ window.addEventListener('android-back', handleAndroidBack)
       <div v-if="devices.length" class="device-list">
         <article v-for="device in devices" :key="device.controller" :class="{ dragging: draggedDeviceController === device.controller }" class="device-card" @dragover="dragDeviceOver" @drop="dropDevice(device.controller, $event)">
           <div class="device-heading-row"><button class="device-heading" type="button" @click="toggleDevice(device.controller)"><div class="device-copy"><strong>{{ device.name }}</strong><span>{{ device.controller }}</span><small>{{ device.dashboards.length }} dashboard{{ device.dashboards.length === 1 ? "" : "s" }}</small></div><span class="device-chevron">{{ expandedDevices.includes(device.controller) ? "⌄" : "›" }}</span></button><div class="device-actions"><button type="button" class="device-drag-handle" draggable="true" aria-label="Move device" title="Drag to reorder" @dragstart="dragDeviceStart(device.controller, $event)" @dragend="endDeviceDrag">⠿</button><button type="button" aria-label="Rename device" title="Rename device" @click="prepareEditDevice(device)">✎</button><button type="button" aria-label="Delete device" title="Delete device" @click="deleteDevice(device.controller)">⌫</button></div></div>
+          <Transition name="device-expand">
           <div v-if="expandedDevices.includes(device.controller)" class="device-dashboards">
             <div class="dashboard-grid" :class="'dashboard-count-' + device.dashboards.length">
               <button v-for="dashboard in device.dashboards" :key="dashboard.id" :class="{ dragging: draggedDashboardId === dashboard.id }" class="dashboard-tile" type="button" draggable="true" @dragstart="dragDashboardStart(dashboard.id, $event)" @dragover="dragDashboardOver" @drop="dropDashboard(dashboard, $event)" @dragend="endDashboardDrag" @click="openDashboard(dashboard)" @touchstart="startLongPress(dashboard)" @touchend="cancelLongPress" @touchmove="cancelLongPress" @mousedown="startLongPress(dashboard)" @mouseup="cancelLongPress" @mouseleave="cancelLongPress"><span class="tile-icon">▦</span><strong>{{ dashboard.name }}</strong><span class="tile-url">{{ dashboard.panelUrl }}</span></button>
             </div>
             <button class="dashboard-tile add-dashboard-tile" type="button" @click="prepareAddDashboard(device)"><span class="tile-icon">＋</span><strong>Add dashboard</strong><span class="tile-url">Add another panel to this device</span></button>
           </div>
+          </Transition>
         </article>
       </div>
-      <div v-else class="empty">No devices yet. Add a controller and its first dashboard.</div>
+      <div v-else class="empty-state"><div class="empty-state-icon"><span>◇</span><span>⌁</span><span>▦</span></div><h3>Nothing connected yet</h3><p>Add your first Mihomo device to keep its dashboards together in one place.</p><button class="add-button empty-add-button" @click="prepareAddDevice"><span class="plus">＋</span> Add your first device</button></div>
       <button class="add-button" @click="prepareAddDevice"><span class="plus">＋</span> Add device</button>
     </section>    <footer>EARLY PROTOTYPE</footer>
     </template>
