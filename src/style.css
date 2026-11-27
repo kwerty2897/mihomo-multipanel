@@ -448,3 +448,5 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden;margin:0}
 .empty-add-button{width:100%;max-width:320px;}
 :root[data-animations="off"] .device-expand-enter-active,:root[data-animations="off"] .device-expand-leave-active,:root[data-animations="off"] .device-heading .device-chevron{transition:none!important;}
 @media(prefers-reduced-motion:reduce){.device-expand-enter-active,.device-expand-leave-active,.device-heading .device-chevron{transition:none!important;}}
+
+.device-heading[aria-expanded="true"] .device-chevron{transform:rotate(90deg);}
