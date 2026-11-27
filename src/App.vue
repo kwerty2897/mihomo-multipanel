@@ -108,11 +108,7 @@ const filteredDevices = computed(() => {
   })
 })
 const expandedDevices = ref<string[]>(devices.value.map(d => d.controller))
-const draggedDeviceController = ref<string | null>(null)
-function dragDeviceStart(controller:string,event:DragEvent) { draggedDeviceController.value=controller; if(event.dataTransfer){event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('text/plain',controller)} }
 function dragDeviceOver(event:DragEvent) { event.preventDefault(); if(event.dataTransfer) event.dataTransfer.dropEffect='move' }
-function dropDevice(targetController:string,event:DragEvent) { event.preventDefault(); const source=draggedDeviceController.value || event.dataTransfer?.getData('text/plain'); draggedDeviceController.value=null; if(!source||source===targetController) return; const groups=new Map<string,Profile[]>(); for(const p of profiles.value){if(!groups.has(p.controller))groups.set(p.controller,[]);groups.get(p.controller)!.push(p)} const keys=[...groups.keys()]; const from=keys.indexOf(source),to=keys.indexOf(targetController); if(from<0||to<0)return; keys.splice(from,1);keys.splice(to,0,source);profiles.value=keys.flatMap(k=>groups.get(k)!) }
-function endDeviceDrag(){draggedDeviceController.value=null}
 
 const draggedDashboardId = ref<number | null>(null)
 function dragDashboardStart(id:number, event:DragEvent) { draggedDashboardId.value=id; if(event.dataTransfer) { event.dataTransfer.effectAllowed='move'; event.dataTransfer.setData('text/plain',String(id)) } }
@@ -245,7 +241,7 @@ window.addEventListener('android-back', handleAndroidBack)
       <div v-if="showDeviceSearch" class="device-search"><span class="device-search-icon">⌕</span><input v-model="deviceSearch" type="search" aria-label="Search devices and dashboards" placeholder="Search devices or dashboards"/><button v-if="deviceSearch" type="button" aria-label="Clear search" @click="deviceSearch = ''">×</button></div>
       <div v-if="devices.length && deviceSearch && !filteredDevices.length" class="search-empty"><strong>No matches</strong><span>Try another device or dashboard name.</span></div>
       <div v-if="devices.length" class="device-list">
-        <article v-for="device in filteredDevices" :key="device.controller" :class="{ dragging: draggedDeviceController === device.controller }" class="device-card" @dragover="dragDeviceOver" @drop="dropDevice(device.controller, $event)">
+        <article v-for="device in filteredDevices" :key="device.controller" class="device-card">
           <div class="device-heading-row"><button class="device-heading" type="button" :aria-expanded="expandedDevices.includes(device.controller)" @click="toggleDevice(device.controller)"><div class="device-copy"><strong>{{ device.name }}</strong><span>{{ device.controller }}</span><small>{{ device.dashboards.length }} dashboard{{ device.dashboards.length === 1 ? "" : "s" }}<span v-if="historyEnabled && device.dashboards.some(d => d.lastOpenedAt)" class="device-last-opened">{{ formatLastOpened(Math.max(...device.dashboards.map(d => d.lastOpenedAt || 0))) }}</span></small></div><span class="device-chevron">{{ expandedDevices.includes(device.controller) ? "⌄" : "›" }}</span></button><div class="device-actions"><button type="button" aria-label="Rename device" title="Rename device" @click="prepareEditDevice(device)">✎</button><button type="button" aria-label="Delete device" title="Delete device" @click="deleteDevice(device.controller)">⌫</button></div></div>
           <Transition name="device-expand">
           <div v-if="expandedDevices.includes(device.controller)" class="device-dashboards">
