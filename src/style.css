@@ -481,3 +481,5 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden;margin:0}
 /* Device last-opened metadata */
 .device-copy small{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
 .device-last-opened{font-size:11px;opacity:.7;font-weight:400}
+
+.quick-template-presets{margin:0 0 10px}.quick-template-label{display:block;font-size:12px;color:var(--mp-muted);margin-bottom:7px}.quick-template-buttons{display:flex;gap:8px;flex-wrap:wrap}.quick-template-buttons button{flex:1;min-width:80px;padding:10px;border:1px solid var(--mp-outline);border-radius:12px;background:var(--mp-neutral);color:var(--mp-neutral-on);font:inherit;font-size:13px;font-weight:600;cursor:pointer}.quick-template-buttons button:active{transform:scale(.97)}
